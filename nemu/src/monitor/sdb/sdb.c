@@ -69,6 +69,10 @@ static int cmd_si(char *args) {
   return 0;
 }
 
+static int cmd_info(char *args) {
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -80,7 +84,7 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si", "Single-step excution si [N], N is No. of steps default 1", cmd_si},
-
+  { "info", "Show register value OR Show watch point info", cmd_info},
   /* TODO: Add more commands */
 
 };
