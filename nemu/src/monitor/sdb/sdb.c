@@ -72,7 +72,7 @@ static int cmd_si(char *args) {
 static int cmd_info(char *args) {
   char *target = strtok(NULL, " ");
   printf("target=%s\n", target);
-  if (strcmp(target, "r")) {
+  if (strcmp(target, "r") == 0) {
     isa_reg_display();
   } else {
     printf("watchpoint featre under development...\n");
