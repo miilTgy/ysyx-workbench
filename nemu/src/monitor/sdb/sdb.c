@@ -73,6 +73,7 @@ static int cmd_info(char *args) {
   char *target = strtok(NULL, " ");
   if (target == NULL) {
     printf("ERROR: missing info target: r/w");
+    return 0;
   }
   printf("target=%s\n", target);
   if (strcmp(target, "r") == 0) {
