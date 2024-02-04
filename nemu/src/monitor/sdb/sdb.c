@@ -70,6 +70,14 @@ static int cmd_si(char *args) {
 }
 
 static int cmd_info(char *args) {
+  char *target = strtok(NULL, " ");
+  printf("target=%s\n", target);
+  if (strcmp(target, "r") == 0) {
+    isa_reg_display();
+  } else {
+    printf("watchpoint featre under development...\n");
+  }
+  
   return 0;
 }
 
@@ -84,7 +92,7 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si", "Single-step excution si [N], N is No. of steps default 1", cmd_si},
-  { "info", "Show register value OR Show watch point info", cmd_info},
+  { "info", "Show register value OR Show watch point info info r/w", cmd_info},
   /* TODO: Add more commands */
 
 };
