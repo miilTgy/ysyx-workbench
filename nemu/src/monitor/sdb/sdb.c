@@ -81,6 +81,10 @@ static int cmd_info(char *args) {
   return 0;
 }
 
+static int cmd_x(char *args) {
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -93,6 +97,7 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
   { "si", "Single-step excution si [N], N is No. of steps default 1", cmd_si},
   { "info", "Show register value OR Show watch point info info r/w", cmd_info},
+  { "x", "Scan memory x N EXPR, N is No. of address, EXPR is starting address", cmd_x},
   /* TODO: Add more commands */
 
 };
