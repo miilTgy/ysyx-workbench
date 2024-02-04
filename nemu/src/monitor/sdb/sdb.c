@@ -81,6 +81,21 @@ static int cmd_info(char *args) {
   return 0;
 }
 
+word_t paddr_read(paddr_t addr, int len);
+static int cmd_x(char *args) {
+  char *scan_num = strtok(NULL, " ");
+  char *scan_addr = strtok(NULL, " ");
+  int num = 0;
+  sscanf( scan_num, "%d", &num);
+  paddr_t addr = 0;
+  sscanf( scan_addr, "%x", &addr);
+  for (int i = 0; i < num; i++) {
+    printf("Address=%x, value=%08lx\n", addr, paddr_read(addr, 4));
+    addr += 4;
+  }
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -92,7 +107,8 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si", "Single-step excution si [N], N is No. of steps default 1", cmd_si},
-  { "info", "Show register value OR Show watch point info", cmd_info},
+  { "info", "Show register value OR Show watch point info info r/w", cmd_info},
+  { "x", "Scan memory x N EXPR, N is No. of address, EXPR is starting address", cmd_x},
   /* TODO: Add more commands */
 
 };
