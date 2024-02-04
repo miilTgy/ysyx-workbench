@@ -81,7 +81,18 @@ static int cmd_info(char *args) {
   return 0;
 }
 
+word_t paddr_read(paddr_t addr, int len);
 static int cmd_x(char *args) {
+  char *scan_num = strtok(NULL, " ");
+  char *scan_addr = strtok(NULL, " ");
+  int num = 0;
+  sscanf( scan_num, "%d", &num);
+  paddr_t addr = 0;
+  sscanf( scan_addr, "%x", &addr);
+  for (int i = 0; i < num; i++) {
+    printf("Address=%x, value=%08lx\n", addr, paddr_read(addr, 4));
+    addr += 4;
+  }
   return 0;
 }
 
