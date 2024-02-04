@@ -71,6 +71,10 @@ static int cmd_si(char *args) {
 
 static int cmd_info(char *args) {
   char *target = strtok(NULL, " ");
+  if (target == NULL) {
+    printf("ERROR: missing info target: r/w\n");
+    return 0;
+  }
   printf("target=%s\n", target);
   if (strcmp(target, "r") == 0) {
     isa_reg_display();
