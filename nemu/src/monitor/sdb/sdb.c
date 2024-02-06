@@ -89,6 +89,26 @@ word_t paddr_read(paddr_t addr, int len);
 static int cmd_x(char *args) {
   char *scan_num = strtok(NULL, " ");
   char *scan_addr = strtok(NULL, " ");
+
+  if ((scan_num == NULL) && (scan_addr == NULL)) {
+    printf("ERROR: N & EXPR can not be NULL.\n");
+    return 0;
+  } else if (scan_num == NULL) {
+    printf("ERROR: N can not be NULL.\n");
+    return 0;
+  } else if (scan_addr == NULL) {
+    printf("ERROR: EXPR can not be NULL.\n");
+    return 0;
+  }
+
+  if ((strspn(scan_num, "0123456789")!=strlen(scan_num))) {
+    printf("Invalid N: A number is required\n");
+    return 0;
+  }
+  if ((scan_addr[1] != 'x') || (strspn(scan_num, "0123456789x")!=strlen(scan_num))) {
+    printf("Invalid Address: A hex number required.\n");
+    return 0;
+  }
   int num = 0;
   sscanf( scan_num, "%d", &num);
   paddr_t addr = 0;
