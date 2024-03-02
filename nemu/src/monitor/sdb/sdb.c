@@ -85,6 +85,11 @@ static int cmd_info(char *args) {
   return 0;
 }
 
+static int cmd_p(char *args) {
+  expr(args, (bool*) true);
+  return 0;
+} // TODO
+
 word_t paddr_read(paddr_t addr, int len);
 static int cmd_x(char *args) {
   char *scan_num = strtok(NULL, " ");
@@ -105,7 +110,7 @@ static int cmd_x(char *args) {
     printf("Invalid N: A number is required\n");
     return 0;
   }
-  if ((scan_addr[1] != 'x') || (strspn(scan_num, "0123456789x")!=strlen(scan_num))) {
+  if ((scan_addr[0] != '0') || (scan_addr[1] != 'x') || (strspn(scan_num, "0123456789x")!=strlen(scan_num))) {
     printf("Invalid Address: A hex number required.\n");
     return 0;
   }
@@ -127,12 +132,13 @@ static struct {
   const char *description;
   int (*handler) (char *);
 } cmd_table [] = {
-  { "help", "Display information about all supported commands", cmd_help },
-  { "c", "Continue the execution of the program", cmd_c },
-  { "q", "Exit NEMU", cmd_q },
-  { "si", "Single-step excution si [N], N is No. of steps default 1", cmd_si},
-  { "info", "Show register value OR Show watch point info info r/w", cmd_info},
-  { "x", "Scan memory x N EXPR, N is No. of address, EXPR is starting address", cmd_x},
+  { "help", "help [command], Display information about all supported commands", cmd_help },
+  { "c", "c, Continue the execution of the program", cmd_c },
+  { "q", "q, Exit NEMU", cmd_q },
+  { "si", "si [N], Single-step excution, N is No. of steps default 1", cmd_si},
+  { "info", "info r/w, Show register value OR Show watch point info", cmd_info},
+  { "x", "x N EXPR, Scan memory, N is No. of address, EXPR is starting address", cmd_x},
+  { "p", "p EXPR, Calculate the value of EXPR", cmd_p},
   /* TODO: Add more commands */
 
 };

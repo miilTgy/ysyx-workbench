@@ -21,7 +21,7 @@
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ,
+  TK_NOTYPE = 256, TK_EQ, TK_LP, TK_RP, TK_NUM
 
   /* TODO: Add more token types */
 
@@ -38,6 +38,15 @@ static struct rule {
 
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
+  {"\\-", '-'},         // minus
+  {"\\*", '*'},         // multiple
+  {"\\/", '/'},         // divide
+
+  {"\\(", TK_LP},       // left parenthesis
+  {"\\)", TK_RP},       // right parenthesis
+
+  {"[0-9]+", TK_NUM},   // number
+
   {"==", TK_EQ},        // equal
 };
 
@@ -95,7 +104,39 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
-          default: TODO();
+          case '+': 
+            tokens[nr_token] = (Token) {'+'};
+            nr_token++;
+            break;
+          case '-':
+            tokens[nr_token] = (Token) {'-'};
+            nr_token++;
+            break;
+          case '*':
+            tokens[nr_token] = (Token) {'*'};
+            nr_token++;
+            break;
+          case '/':
+            tokens[nr_token] = (Token) {'/'};
+            nr_token++;
+            break;
+          case TK_LP:
+            tokens[nr_token] = (Token) {TK_LP};
+            nr_token++;
+            break;
+          case TK_RP:
+            tokens[nr_token] = (Token) {TK_RP};
+            nr_token++;
+            break;
+          case TK_NUM:
+            tokens[nr_token] = (Token) {TK_NUM};
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
+            nr_token++;
+            break;
+          case TK_NOTYPE:
+            break;
+          default:
+            printf("Position: %d, Token num: %d, not matched!.\n", (position - substr_len), nr_token);
         }
 
         break;
