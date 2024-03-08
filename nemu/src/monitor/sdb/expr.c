@@ -142,6 +142,7 @@ static bool make_token(char *e) {
         break;
       }
     }
+    printf("nr of tokens: %d\n", nr_token);
 
     if (i == NR_REGEX) {
       printf("no match at position %d\n%s\n%*.s^\n", position, e, position, "");
@@ -152,7 +153,7 @@ static bool make_token(char *e) {
   return true;
 }
 
-uint32_t eval(int p, int q);
+uint64_t eval(int p, int q);
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
@@ -160,13 +161,14 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  eval();
+  printf("value: %ld", eval(0, nr_token-1));
 
   return 0;
 }
 
 bool check_parentheses(int p, int q);
-uint32_t eval(int p, int q) {
+int op_pos(int p, int q);
+uint64_t eval(int p, int q) {
   if (p > q) {
     /* Bad expression */
     panic("Bad expression!\n");
@@ -176,6 +178,7 @@ uint32_t eval(int p, int q) {
      * For now this token should be a number.
      * Return the value of the number.
      */
+    return atoi(tokens[p].str);
   }
   else if (check_parentheses(p, q) == true) {
     /* The expression is surrounded by a matched pair of parentheses.
@@ -184,33 +187,54 @@ uint32_t eval(int p, int q) {
     return eval(p + 1, q - 1);
   }
   else {
-    op = the position of 主运算符 in the token expression;
-    val1 = eval(p, op - 1);
-    val2 = eval(op + 1, q);
+    int op = op_pos(p, q);
+    uint64_t val1 = eval(p, op - 1);
+    uint64_t val2 = eval(op + 1, q);
 
     int op_type = tokens[op].type;
     switch (op_type) {
       case '+': return val1 + val2;
-      case '-': /* ... */
-      case '*': /* ... */
-      case '/': /* ... */
+      case '-': return val1 - val2;
+      case '*': return val1 * val2;
+      case '/': return val1 / val2;
       default: assert(0);
     }
   }
 }
 
 bool check_parentheses(int p, int q) {
-    int poi = 0;
-    bool rtn = true;
-    for (int i = 0; i<(q - p + 1); i++) {
-        if (tokens[p + i].type == '(') {
-            poi++;
-        } else if (tokens[i].type == ')') {
-            poi--;
-        }
-        if (poi <= 0 && i != q && rtn == true) {
-            rtn = false;
-        }
+  int poi = 0;
+  bool rtn = true;
+  for (int i = 0; i<(q - p + 1); i++) {
+    if (tokens[p + i].type == '(') {
+      poi++;
+    } else if (tokens[p + i].type == ')') {
+      poi--;
     }
-    return rtn;
+    if (poi <= 0 && i != (q - p) && rtn == true) {
+      rtn = false;
+    }
+  }
+  return rtn;
+}
+
+int op_pos(int p, int q) {
+  bool flg = false;
+  int rtn = p;
+  for(int i = p; i < q; i++){
+    if (tokens[i].type != TK_NUM) {
+      if (tokens[i].type == TK_LP) {
+        while (tokens[i].type != TK_RP) {
+          i++;
+        } // jump to ')'
+      }
+      if (tokens[i].type == '+' || tokens[i].type == '-') {
+        rtn = (i > rtn) ? i : rtn;
+        flg = true; // +/- found, *// forbidden
+      } else if (!flg && (tokens[i].type == '*' || tokens[i].type == '/')) {
+        rtn = (i > rtn) ? i : rtn;
+      }
+    }
+  }
+  return rtn;
 }
