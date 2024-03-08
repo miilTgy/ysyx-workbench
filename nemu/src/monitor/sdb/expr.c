@@ -152,7 +152,7 @@ static bool make_token(char *e) {
   return true;
 }
 
-
+uint32_t eval(int p, int q);
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
@@ -160,7 +160,57 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  TODO();
+  eval();
 
   return 0;
+}
+
+bool check_parentheses(int p, int q);
+uint32_t eval(int p, int q) {
+  if (p > q) {
+    /* Bad expression */
+    panic("Bad expression!\n");
+  }
+  else if (p == q) {
+    /* Single token.
+     * For now this token should be a number.
+     * Return the value of the number.
+     */
+  }
+  else if (check_parentheses(p, q) == true) {
+    /* The expression is surrounded by a matched pair of parentheses.
+     * If that is the case, just throw away the parentheses.
+     */
+    return eval(p + 1, q - 1);
+  }
+  else {
+    op = the position of 主运算符 in the token expression;
+    val1 = eval(p, op - 1);
+    val2 = eval(op + 1, q);
+
+    int op_type = tokens[op].type;
+    switch (op_type) {
+      case '+': return val1 + val2;
+      case '-': /* ... */
+      case '*': /* ... */
+      case '/': /* ... */
+      default: assert(0);
+    }
+  }
+}
+
+bool check_parentheses(int p, int q) {
+    int poi = 0;
+    bool rtn = true;
+    for (int i = 0; i<(q - p + 1); i++) {
+        if (tokens[p + i].type == '(') {
+            poi++;
+        } else if (tokens[i].type == ')') {
+            poi--;
+        }
+        if (poi <= 0 && i != q && rtn == true) {
+            rtn = false;
+        }
+    }
+    return rtn;
 }
