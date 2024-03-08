@@ -86,9 +86,10 @@ static int cmd_info(char *args) {
 }
 
 static int cmd_p(char *args) {
-  expr(args, (bool*) true);
+  bool flag = true;
+  expr(args, &flag);
   return 0;
-} // TODO
+}
 
 word_t paddr_read(paddr_t addr, int len);
 static int cmd_x(char *args) {
