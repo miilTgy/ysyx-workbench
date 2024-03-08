@@ -206,9 +206,9 @@ bool check_parentheses(int p, int q) {
   int poi = 0;
   bool rtn = true;
   for (int i = 0; i<(q - p + 1); i++) {
-    if (tokens[p + i].type == '(') {
+    if (tokens[p + i].type == TK_LP) {
       poi++;
-    } else if (tokens[p + i].type == ')') {
+    } else if (tokens[p + i].type == TK_RP) {
       poi--;
     }
     if (poi <= 0 && i != (q - p) && rtn == true) {
