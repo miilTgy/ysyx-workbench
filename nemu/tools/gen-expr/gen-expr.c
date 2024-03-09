@@ -31,8 +31,21 @@ static char *code_format =
 "  return 0; "
 "}";
 
+uint64_t choose(uint64_t a) {
+  return (rand() % 3);
+}
+
+void gen_num() {
+  int num = rand() % 1000;
+}
+
 static void gen_rand_expr() {
-  buf[0] = '\0';
+  switch (choose(3)) {
+    case 0: gen_num(); break;
+    case 1: gen('('); gen_rand_expr(); gen(')'); break;
+    default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
+  }
+  buf[0] += '\0';
 }
 
 int main(int argc, char *argv[]) {
