@@ -58,7 +58,7 @@ void gen_rand_op() {
   gettimeofday(&tv, NULL);  // get current time us
   srand(tv.tv_usec);        // set seed
   char op[4] = "+-*/";
-  buf[buf_indx] = op[rand() % 4];
+  buf[buf_indx] = op[rand() % 4]; // TODO： Avoid divided by 0 by add "2+" after /
   buf_indx++;
 }
 
