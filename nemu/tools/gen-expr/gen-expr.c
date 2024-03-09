@@ -81,7 +81,6 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < loop; i ++) {
     gen_rand_expr();
     buf[(buf_indx + 1)] = '\0';
-    printf("%s\n", buf);
 
     sprintf(code_buf, code_format, buf);
 
