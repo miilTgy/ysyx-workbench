@@ -42,8 +42,8 @@ void gen_num() {
   gettimeofday(&tv, NULL);  // get current time us
   srand(tv.tv_usec);        // set seed
   int num = rand() % 10;
-  char c[2];
-  snprintf(c, 2, "%d", num);
+  char c[20];
+  snprintf(c, 2, "%u", num);
   buf[buf_indx] = c[0];
   buf_indx++;
 }
