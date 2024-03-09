@@ -42,7 +42,7 @@ void gen_num() {
   gettimeofday(&tv, NULL);  // get current time us
   srand(tv.tv_usec);        // set seed
   int num = rand() % 10;
-  char c[1];
+  char c[2];
   snprintf(c, 2, "%d", num);
   buf[buf_indx] = c[0];
   buf_indx++;
@@ -80,6 +80,8 @@ int main(int argc, char *argv[]) {
   int i;
   for (i = 0; i < loop; i ++) {
     gen_rand_expr();
+    buf[(buf_indx + 1)] = '\0';
+    printf("%s\n", buf);
 
     sprintf(code_buf, code_format, buf);
 
