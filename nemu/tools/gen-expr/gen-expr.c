@@ -17,11 +17,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/time.h>
 #include <assert.h>
 #include <string.h>
 
 // this should be enough
 static char buf[65536] = {};
+static int buf_indx = 0;
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
@@ -36,16 +38,40 @@ uint64_t choose(uint64_t a) {
 }
 
 void gen_num() {
-  int num = rand() % 1000;
+  struct timeval tv;        // get current time us
+  gettimeofday(&tv, NULL);  // get current time us
+  srand(tv.tv_usec);        // set seed
+  int num = rand() % 10;
+  char c[20];
+  snprintf(c, 2, "%u", num);
+  buf[buf_indx] = c[0];
+  buf_indx++;
+}
+
+void gen(char p) {
+  buf[buf_indx] = p;
+  buf_indx++;
+}
+
+void gen_rand_op() {
+  struct timeval tv;        // get current time us
+  gettimeofday(&tv, NULL);  // get current time us
+  srand(tv.tv_usec);        // set seed
+  char op[4] = "+-*/";
+  buf[buf_indx] = op[rand() % 4]; // TODO： Avoid divided by 0 by add "2+" after /
+  buf_indx++;
 }
 
 static void gen_rand_expr() {
+  if (buf_indx >= 65536) {
+    printf("\033[0m\033[1;31m%s\033[0m\n", "Expression Oversize!");
+    exit(1);
+  }
   switch (choose(3)) {
     case 0: gen_num(); break;
     case 1: gen('('); gen_rand_expr(); gen(')'); break;
     default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
   }
-  buf[0] += '\0';
 }
 
 int main(int argc, char *argv[]) {
@@ -58,6 +84,7 @@ int main(int argc, char *argv[]) {
   int i;
   for (i = 0; i < loop; i ++) {
     gen_rand_expr();
+    buf[(buf_indx + 1)] = '\0';
 
     sprintf(code_buf, code_format, buf);
 
