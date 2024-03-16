@@ -70,7 +70,10 @@ void gen_div() {
 static void gen_rand_expr() {
   if (buf_indx >= 65536) {
     printf("\033[0m\033[1;31m%s\033[0m\n", "Expression Oversize!");
-    exit(1);
+    buf_indx = 0;
+    gen_rand_expr();
+    buf[buf_indx++] = '\0';
+    // exit(1);
   }
   switch (choose(3)) {
     case 0: gen_num(); break;
