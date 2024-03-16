@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
   int i;
   for (i = 0; i < loop; i ++) {
     gen_rand_expr();
-    buf[(buf_indx + 1)] = '\0';
+    // buf[(buf_indx + 1)] = '\0';
 
     sprintf(code_buf, code_format, buf);
 
@@ -104,6 +104,7 @@ int main(int argc, char *argv[]) {
     pclose(fp);
 
     printf("%u %s\n", result, buf);
+    buf_indx = 0;
   }
   return 0;
 }
