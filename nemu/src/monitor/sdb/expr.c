@@ -160,7 +160,7 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  printf("value: %ld\n", eval(0, nr_token-1));
+  printf("value: %lu\n", eval(0, nr_token-1));
 
   return 0;
 }

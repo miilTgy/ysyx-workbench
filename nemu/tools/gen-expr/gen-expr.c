@@ -27,9 +27,10 @@ static int buf_indx = 0;
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
+"#include <stdint.h>\n"
 "int main() { "
-"  unsigned result = %s; "
-"  printf(\"%%u\", result); "
+"  uint64_t result = %s; "
+"  printf(\"%%ld\", result); "
 "  return 0; "
 "}";
 
@@ -78,7 +79,7 @@ void gen_div() {
 static int gen_rand_expr() {
   int rr = 0;
   if (buf_indx >= 65536) {
-    printf("\033[0m\033[1;31m%s\033[0m\n", "Expression Oversize!");
+    // printf("\033[0m\033[1;31m%s\033[0m\n", "Expression Oversize!");
     buf_indx = 0;
     buf[0] = '\0';
     return 1;
