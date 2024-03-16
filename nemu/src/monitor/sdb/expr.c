@@ -215,6 +215,9 @@ bool check_parentheses(int p, int q) {
       rtn = false;
     }
   }
+  if (poi > 0) {
+    rtn = false;
+  }
   return rtn;
 }
 
@@ -224,8 +227,14 @@ int op_pos(int p, int q) {
   for(int i = p; i < q; i++){
     if (tokens[i].type != TK_NUM) {
       if (tokens[i].type == TK_LP) {
-        while (tokens[i].type != TK_RP) {
+        int cnt = 1;
+        while (cnt != 0) {
           i++;
+          if (tokens[i].type == TK_LP) {
+            cnt++;
+          } else if (tokens[i].type == TK_RP) {
+            cnt--;
+          }
         } // jump to ')'
       }
       if (tokens[i].type == '+' || tokens[i].type == '-') {

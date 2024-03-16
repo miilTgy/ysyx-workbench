@@ -27,10 +27,9 @@ static int buf_indx = 0;
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
-"#include <stdint.h>\n"
-"int main() { "
-"  uint64_t result = %s; "
-"  printf(\"%%ld\", result); "
+"int main(int argc, char **argv) { "
+"  unsigned long long result = %s; "
+"  printf(\"%%llu\", result); "
 "  return 0; "
 "}";
 
