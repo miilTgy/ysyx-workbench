@@ -57,8 +57,13 @@ void gen_rand_op() {
   struct timeval tv;        // get current time us
   gettimeofday(&tv, NULL);  // get current time us
   srand(tv.tv_usec);        // set seed
-  char op[4] = "+-*/";
-  buf[buf_indx] = op[rand() % 4]; // TODO： Avoid divided by 0 by add "2+" after /
+  char op[4] = "+-*";
+  buf[buf_indx] = op[rand() % 3];
+  buf_indx++;
+}
+
+void gen_div() {
+  buf[buf_indx] = '/';
   buf_indx++;
 }
 
@@ -70,7 +75,21 @@ static void gen_rand_expr() {
   switch (choose(3)) {
     case 0: gen_num(); break;
     case 1: gen('('); gen_rand_expr(); gen(')'); break;
-    default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
+    default: 
+      gen_rand_expr();
+      if (rand() % 4 == 3) {
+        gen_div();
+        gen('(');
+        gen_rand_expr();
+        gen('+');
+        gen('1');
+        gen(')');
+        gen_rand_op();
+      } else {
+        gen_rand_op();
+      }
+      gen_rand_expr();
+      break;
   }
 }
 
@@ -83,8 +102,9 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
+    buf_indx = 0;
     gen_rand_expr();
-    // buf[(buf_indx + 1)] = '\0';
+    buf[buf_indx++] = '\0';
 
     sprintf(code_buf, code_format, buf);
 
@@ -104,7 +124,6 @@ int main(int argc, char *argv[]) {
     pclose(fp);
 
     printf("%u %s\n", result, buf);
-    buf_indx = 0;
   }
   return 0;
 }
