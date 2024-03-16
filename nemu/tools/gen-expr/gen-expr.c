@@ -38,52 +38,67 @@ uint64_t choose(uint64_t a) {
 }
 
 void gen_num() {
-  struct timeval tv;        // get current time us
-  gettimeofday(&tv, NULL);  // get current time us
-  srand(tv.tv_usec);        // set seed
-  int num = rand() % 10;
-  char c[20];
-  snprintf(c, 2, "%u", num);
-  buf[buf_indx] = c[0];
-  buf_indx++;
+  if (buf_indx+1 <= 65536) {
+    struct timeval tv;        // get current time us
+    gettimeofday(&tv, NULL);  // get current time us
+    srand(tv.tv_usec);        // set seed
+    int num = rand() % 10;
+    char c[20];
+    snprintf(c, 2, "%u", num);
+    buf[buf_indx] = c[0];
+    buf_indx++;
+  }
 }
 
 void gen(char p) {
-  buf[buf_indx] = p;
-  buf_indx++;
+  if (buf_indx+1 <= 65536) {
+    buf[buf_indx] = p;
+    buf_indx++;
+  }
 }
 
 void gen_rand_op() {
-  struct timeval tv;        // get current time us
-  gettimeofday(&tv, NULL);  // get current time us
-  srand(tv.tv_usec);        // set seed
-  char op[4] = "+-*";
-  buf[buf_indx] = op[rand() % 3];
-  buf_indx++;
+  if (buf_indx+1 <= 65536) {
+    struct timeval tv;        // get current time us
+    gettimeofday(&tv, NULL);  // get current time us
+    srand(tv.tv_usec);        // set seed
+    char op[4] = "+-*";
+    buf[buf_indx] = op[rand() % 3];
+    buf_indx++;
+  }
 }
 
 void gen_div() {
-  buf[buf_indx] = '/';
-  buf_indx++;
+  if (buf_indx+1 <= 65536) {
+    buf[buf_indx] = '/';
+    buf_indx++;
+  }
 }
 
-static void gen_rand_expr() {
+static int gen_rand_expr() {
+  int rr = 0;
   if (buf_indx >= 65536) {
     printf("\033[0m\033[1;31m%s\033[0m\n", "Expression Oversize!");
     buf_indx = 0;
-    gen_rand_expr();
-    buf[buf_indx++] = '\0';
+    buf[0] = '\0';
+    return 1;
     // exit(1);
   }
   switch (choose(3)) {
     case 0: gen_num(); break;
-    case 1: gen('('); gen_rand_expr(); gen(')'); break;
+    case 1: gen('(');
+            rr = gen_rand_expr();
+            if (rr == 1) return 1; // check oversize every recursive level
+            gen(')');
+            break;
     default: 
-      gen_rand_expr();
+      rr = gen_rand_expr();
+      if (rr == 1) return 1; // check oversize every recursive level
       if (rand() % 4 == 3) {
         gen_div();
         gen('(');
-        gen_rand_expr();
+        rr = gen_rand_expr();
+        if (rr == 1) return 1; // check oversize every recursive level
         gen('+');
         gen('1');
         gen(')');
@@ -91,9 +106,11 @@ static void gen_rand_expr() {
       } else {
         gen_rand_op();
       }
-      gen_rand_expr();
+      rr = gen_rand_expr();
+      if (rr == 1) return 1; // check oversize every recursive level
       break;
   }
+  return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -106,7 +123,11 @@ int main(int argc, char *argv[]) {
   int i;
   for (i = 0; i < loop; i ++) {
     buf_indx = 0;
-    gen_rand_expr();
+    int r = gen_rand_expr();
+    if (r == 1){
+      i--;
+      continue;
+    }
     buf[buf_indx++] = '\0';
 
     sprintf(code_buf, code_format, buf);
