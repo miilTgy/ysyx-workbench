@@ -143,11 +143,11 @@ int main(int argc, char *argv[]) {
     fp = popen("/tmp/.expr", "r");
     assert(fp != NULL);
 
-    int result;
-    ret = fscanf(fp, "%d", &result);
+    unsigned long long result;
+    ret = fscanf(fp, "%llu", &result);
     pclose(fp);
 
-    printf("%u %s\n", result, buf);
+    printf("%llu %s\n", result, buf);
   }
   return 0;
 }
