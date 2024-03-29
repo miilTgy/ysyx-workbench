@@ -24,12 +24,13 @@
 // this should be enough
 static char buf[65536] = {};
 static int buf_indx = 0;
-static char code_buf[65536 + 128] = {}; // a little larger than `buf`
+static char code_buf[65536 + 256] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
+"#include <stdint.h>\n"
 "int main(int argc, char **argv) { "
-"  unsigned long long result = %s; "
-"  printf(\"%%llu\", result); "
+"  uint64_t result = %s; "
+"  printf(\"%%llu\", (unsigned long long)result); "
 "  return 0; "
 "}";
 
@@ -97,10 +98,7 @@ static int gen_rand_expr() {
       if (rand() % 4 == 3) {
         gen_div();
         gen('(');
-        rr = gen_rand_expr();
-        if (rr == 1) return 1; // check oversize every recursive level
-        gen('+');
-        gen('1');
+        gen('6');
         gen(')');
         gen_rand_op();
       } else {
