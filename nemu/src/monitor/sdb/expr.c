@@ -48,10 +48,10 @@ static struct rule {
 
   {"[0-9]+", TK_NUM},   // number
 
-  {"==", TK_EQ},        // equal
-  {"!=", TK_UNEQ},      // unequal
-  {"&&", TK_AND},       // and
-  {"*", TK_PTR}         // pointer
+  {"\\==", TK_EQ},        // equal
+  {"\\!=", TK_UNEQ},      // unequal
+  {"\\&&", TK_AND},       // and
+  {"\\*", TK_PTR}         // pointer
 };
 
 #define NR_REGEX ARRLEN(rules)
