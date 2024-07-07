@@ -21,9 +21,10 @@
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ, TK_LP, TK_RP, TK_NUM
+  TK_NOTYPE = 256, TK_EQ, TK_LP, TK_RP, TK_NUM,
 
   /* TODO: Add more token types */
+  TK_UNEQ, TK_AND, TK_PTR
 
 };
 
@@ -48,6 +49,9 @@ static struct rule {
   {"[0-9]+", TK_NUM},   // number
 
   {"==", TK_EQ},        // equal
+  {"!=", TK_UNEQ},      // unequal
+  {"&&", TK_AND},       // and
+  {"*", TK_PTR}         // pointer
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -132,6 +136,9 @@ static bool make_token(char *e) {
             tokens[nr_token] = (Token) {TK_NUM};
             strncpy(tokens[nr_token].str, substr_start, substr_len);
             nr_token++;
+            break;
+          case TK_EQ:
+            // TODO equal expr function
             break;
           case TK_NOTYPE:
             break;
