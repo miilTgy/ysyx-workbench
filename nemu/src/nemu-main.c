@@ -15,7 +15,7 @@
 
 #include <common.h>
 
-#define TEST_EXPR
+// #define TEST_EXPR
 
 #ifdef TEST_EXPR
 #include "monitor/sdb/sdb.h"
