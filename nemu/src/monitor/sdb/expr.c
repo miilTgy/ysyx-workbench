@@ -140,6 +140,15 @@ static bool make_token(char *e) {
           case TK_EQ:
             // TODO equal expr function
             break;
+          case TK_UNEQ:
+            // TODO unequal expr function
+            break;
+          case TK_AND:
+            // TODO and expr function
+            break;
+          case TK_PTR:
+            // TODO pointer dereferencing
+            break;
           case TK_NOTYPE:
             break;
           default:
