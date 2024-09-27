@@ -51,7 +51,7 @@ static struct rule {
   {"\\==", TK_EQ},        // equal
   {"\\!=", TK_UNEQ},      // unequal
   {"\\&&", TK_AND},       // and
-  {"\\*", TK_PTR}         // pointer
+  {"\\*", TK_PTR}         // pointer de-reference
 };
 
 #define NR_REGEX ARRLEN(rules)
