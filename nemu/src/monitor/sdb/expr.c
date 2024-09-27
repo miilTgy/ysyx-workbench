@@ -184,6 +184,11 @@ word_t expr(char *e, bool *success) {
     return 0;
   }
 
+  for (int j = 0; j < nr_token; j ++) {
+    if (tokens[j].type == '*' && (j == 0 || tokens[j - 1].type == is_certain_type(j-1)) ) {
+      tokens[j].type = TK_PTR;
+    }
+  }
   /* TODO: Insert codes to evaluate the expression. */
   uint64_t answww = eval(0, nr_token-1);
   printf("value: %lu\n", answww);// eval(0, nr_token-1);
