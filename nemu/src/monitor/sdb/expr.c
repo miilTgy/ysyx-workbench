@@ -252,6 +252,7 @@ bool check_parentheses(int p, int q) {
 
 int op_pos(int p, int q) {
   bool flg = false;
+  bool flg_2nd = false; // *and/flag
   int rtn = p;
   for(int i = p; i < q; i++){
     if (tokens[i].type != TK_NUM) {
@@ -271,7 +272,12 @@ int op_pos(int p, int q) {
         flg = true; // +/- found, *// forbidden
       } else if (!flg && (tokens[i].type == '*' || tokens[i].type == '/')) {
         rtn = (i > rtn) ? i : rtn;
+        flg_2nd = true; // *// found, ==/!=/&& forbidden
+      } else if (!flg_2nd && (tokens[i].type == TK_EQ || tokens[i].type == TK_UNEQ || tokens[i].type == TK_AND))
+      {
+        rtn = (i > rtn) ? i : rtn;
       }
+      
     }
   }
   return rtn;
