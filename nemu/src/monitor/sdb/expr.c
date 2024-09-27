@@ -178,6 +178,7 @@ static bool make_token(char *e) {
 }
 
 uint64_t eval(int p, int q);
+bool is_certain_type(int);
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
@@ -292,13 +293,13 @@ int op_pos(int p, int q) {
 
 bool is_certain_type(int position) {
   bool rtn = false;
-  if (tokens[position].type == "+") {
+  if (tokens[position].type == '+') {
     rtn = true;
-  } else if (tokens[position].type == "-") {
+  } else if (tokens[position].type == '-') {
     rtn = true;
-  } else if (tokens[position].type == "*") {
+  } else if (tokens[position].type == '*') {
     rtn = true;
-  } else if (tokens[position].type == "/") {
+  } else if (tokens[position].type == '/') {
     rtn = true;
   } else if (tokens[position].type == TK_LP) {
     rtn = true;
