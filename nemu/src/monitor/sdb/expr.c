@@ -214,7 +214,7 @@ uint64_t eval(int p, int q) {
   if (p > q) {
     /* Bad expression */
     printf("p: %d, q: %d\n", p, q);
-    panic("Bad expression!\n");
+    panic("eval: Bad expression!\n");
   }
   else if (p == q) {
     /* Single token.
