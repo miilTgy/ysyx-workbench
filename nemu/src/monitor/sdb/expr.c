@@ -256,6 +256,7 @@ int op_pos(int p, int q) {
   int rtn = p;
   for(int i = p; i < q; i++){
     if (tokens[i].type != TK_NUM) {
+      /* Jump above enclose*/
       if (tokens[i].type == TK_LP) {
         int cnt = 1;
         while (cnt != 0) {
@@ -267,6 +268,7 @@ int op_pos(int p, int q) {
           }
         } // jump to ')'
       }
+      /* Jump above enclose*/
       if (tokens[i].type == '+' || tokens[i].type == '-') {
         rtn = (i > rtn) ? i : rtn;
         flg = true; // +/- found, *// forbidden
