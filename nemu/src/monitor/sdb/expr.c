@@ -142,6 +142,7 @@ static bool make_token(char *e) {
             break;
           case TK_UNEQ:
             // TODO unequal expr function
+            printf("token: unequal detacted!");
             break;
           case TK_AND:
             // TODO and expr function
