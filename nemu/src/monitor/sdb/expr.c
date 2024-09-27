@@ -46,8 +46,8 @@ static struct rule {
   {"\\(", TK_LP},       // left parenthesis
   {"\\)", TK_RP},       // right parenthesis
 
-  {"[0-9]+", TK_NUM},   // number
   {"0[xX][0-9a-fA-F]+", TK_HEX}, // hex number
+  {"[0-9]+", TK_NUM},   // number
 
   {"\\==", TK_EQ},        // equal
   {"\\!=", TK_UNEQ},      // unequal
