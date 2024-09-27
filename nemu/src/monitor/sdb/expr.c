@@ -284,3 +284,25 @@ int op_pos(int p, int q) {
   }
   return rtn;
 }
+
+bool is_certain_type(int position) {
+  bool rtn = false;
+  if (tokens[position].type == "+") {
+    rtn = true;
+  } else if (tokens[position].type == "-") {
+    rtn = true;
+  } else if (tokens[position].type == "*") {
+    rtn = true;
+  } else if (tokens[position].type == "/") {
+    rtn = true;
+  } else if (tokens[position].type == TK_LP) {
+    rtn = true;
+  } else if (tokens[position].type == TK_EQ) {
+    rtn = true;
+  } else if (tokens[position].type == TK_UNEQ) {
+    rtn = true;
+  } else if (tokens[position].type == TK_AND) {
+    rtn = true;
+  }
+  return rtn;
+}
