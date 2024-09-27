@@ -139,16 +139,24 @@ static bool make_token(char *e) {
             break;
           case TK_EQ:
             // TODO equal expr function
+            tokens[nr_token] = (Token) {TK_EQ};
+            nr_token++;
             break;
           case TK_UNEQ:
             // TODO unequal expr function
             // printf("token: unequal detacted!");
+            tokens[nr_token] = (Token) {TK_UNEQ};
+            nr_token++;
             break;
           case TK_AND:
             // TODO and expr function
+            tokens[nr_token] = (Token) {TK_AND};
+            nr_token++;
             break;
           case TK_PTR:
             // TODO pointer dereferencing
+            tokens[nr_token] = (Token) {TK_PTR};
+            nr_token++;
             break;
           case TK_NOTYPE:
             break;
@@ -215,7 +223,10 @@ uint64_t eval(int p, int q) {
       case '-': return val1 - val2;
       case '*': return val1 * val2;
       case '/': return val1 / val2;
-      default: assert(0);
+      case TK_EQ: return val1 == val2;
+      case TK_UNEQ: return val1 != val2;
+      case TK_AND: return val1 && val2;
+      default: printf("No such Op. type!\n"); assert(0);
     }
   }
 }
