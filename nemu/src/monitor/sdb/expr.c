@@ -24,7 +24,7 @@ enum {
   TK_NOTYPE = 256, TK_EQ, TK_LP, TK_RP, TK_NUM,
 
   /* TODO: Add more token types */
-  TK_UNEQ, TK_AND, TK_PTR
+  TK_UNEQ, TK_AND, TK_PTR, TK_HEX
 
 };
 
@@ -47,6 +47,7 @@ static struct rule {
   {"\\)", TK_RP},       // right parenthesis
 
   {"[0-9]+", TK_NUM},   // number
+  {"0[xX][0-9a-fA-F]+", TK_HEX}, // hex number
 
   {"\\==", TK_EQ},        // equal
   {"\\!=", TK_UNEQ},      // unequal
@@ -97,8 +98,8 @@ static bool make_token(char *e) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-        // Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
-        //     i, rules[i].regex, position, substr_len, substr_len, substr_start);
+        Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
+            i, rules[i].regex, position, substr_len, substr_len, substr_start);
 
         position += substr_len;
 
@@ -130,6 +131,11 @@ static bool make_token(char *e) {
             break;
           case TK_RP:
             tokens[nr_token] = (Token) {TK_RP};
+            nr_token++;
+            break;
+          case TK_HEX:
+            tokens[nr_token] = (Token) {TK_HEX};
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
             nr_token++;
             break;
           case TK_NUM:
@@ -194,7 +200,7 @@ word_t expr(char *e, bool *success) {
     }
   }
   /* Recognize all TK_PTR */
-  
+
   /* TODO: Insert codes to evaluate the expression. */
   uint64_t answww = eval(0, nr_token-1);
   printf("value: %lu\n", answww);// eval(0, nr_token-1);
@@ -215,7 +221,16 @@ uint64_t eval(int p, int q) {
      * For now this token should be a number.
      * Return the value of the number.
      */
-    return atoi(tokens[p].str);
+    if (tokens[p].type == TK_NUM) {
+      return atoi(tokens[p].str);
+    } else if (tokens[p].type == TK_HEX) {
+      uint64_t hex_res;
+      char *endptr;
+      hex_res = strtol(tokens[p].str, &endptr, 16);
+      return hex_res;
+    } else {
+      return 0;
+    }
   }
   else if (check_parentheses(p, q) == true) {
     /* The expression is surrounded by a matched pair of parentheses.
