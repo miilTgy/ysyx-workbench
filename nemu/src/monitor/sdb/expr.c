@@ -231,8 +231,7 @@ uint64_t eval(int p, int q) {
       char *endptr;
       hex_res = strtol(tokens[p].str, &endptr, 16);
       return hex_res;
-    } else if (tokens[p].type == TK_REG)
-    {
+    } else if (tokens[p].type == TK_REG) {
       bool flag = false;
       return isa_reg_str2val(tokens[p].str, &flag);
     }
