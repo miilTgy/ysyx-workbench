@@ -297,9 +297,12 @@ int op_pos(int p, int q) {
       if (tokens[i].type == '+' || tokens[i].type == '-') {
         rtn = (i > rtn) ? i : rtn;
         flg = true; // +/- found, *// forbidden
+        flg_2nd = true;
+        flg_3rd = true;
       } else if (!flg && (tokens[i].type == '*' || tokens[i].type == '/')) {
         rtn = (i > rtn) ? i : rtn;
         flg_2nd = true; // *// found, ==/!=/&& forbidden
+        flg_3rd = true;
       } else if (!flg_2nd && (tokens[i].type == TK_EQ || tokens[i].type == TK_UNEQ || tokens[i].type == TK_AND))
       {
         rtn = (i > rtn) ? i : rtn;
