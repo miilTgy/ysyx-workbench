@@ -207,6 +207,7 @@ word_t expr(char *e, bool *success) {
 bool check_parentheses(int p, int q);
 int op_pos(int p, int q);
 word_t paddr_read(paddr_t addr, int len);
+bool op_is_unary(int position);
 uint64_t eval(int p, int q) {
   if (p > q) {
     /* Bad expression */
@@ -237,7 +238,10 @@ uint64_t eval(int p, int q) {
   }
   else {
     int op = op_pos(p, q);
-    uint64_t val1 = eval(p, op - 1);
+    uint64_t val1 = 0;
+    if (!op_is_unary(op)) {
+      val1 = eval(p, op - 1); // only binary operator needed
+    }
     uint64_t val2 = eval(op + 1, q);
 
     int op_type = tokens[op].type;
@@ -333,6 +337,14 @@ bool is_certain_type(int position) {
   } else if (tokens[position].type == TK_UNEQ) {
     rtn = true;
   } else if (tokens[position].type == TK_AND) {
+    rtn = true;
+  }
+  return rtn;
+}
+
+bool op_is_unary(int position) {
+  bool rtn = false;
+  if (tokens[position].type == TK_PTR) {
     rtn = true;
   }
   return rtn;
