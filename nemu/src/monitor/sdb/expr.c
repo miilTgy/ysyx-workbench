@@ -206,6 +206,7 @@ word_t expr(char *e, bool *success) {
 
 bool check_parentheses(int p, int q);
 int op_pos(int p, int q);
+word_t paddr_read(paddr_t addr, int len);
 uint64_t eval(int p, int q) {
   if (p > q) {
     /* Bad expression */
@@ -248,6 +249,7 @@ uint64_t eval(int p, int q) {
       case TK_EQ: {return val1 == val2;}
       case TK_UNEQ: {return val1 != val2;}
       case TK_AND: {return val1 && val2;}
+      case TK_PTR: {return paddr_read(val2, 4);}
       default: {printf("No such Op. type!\n"); assert(0);}
     }
   }
@@ -275,6 +277,7 @@ bool check_parentheses(int p, int q) {
 int op_pos(int p, int q) {
   bool flg = false;
   bool flg_2nd = false; // *and/flag
+  bool flg_3rd = false; // PTR flag
   int rtn = p;
   for(int i = p; i < q; i++){
     if (tokens[i].type != TK_NUM) {
@@ -300,8 +303,11 @@ int op_pos(int p, int q) {
       } else if (!flg_2nd && (tokens[i].type == TK_EQ || tokens[i].type == TK_UNEQ || tokens[i].type == TK_AND))
       {
         rtn = (i > rtn) ? i : rtn;
+        flg_3rd = true; // TK_EQ/TK_UNEQ/TK_AND found, TK_PTR forbidden
+      } else if (!flg_3rd && (tokens[i].type == TK_PTR))
+      {
+        rtn = (i > rtn) ? i : rtn;
       }
-      
     }
   }
   return rtn;
