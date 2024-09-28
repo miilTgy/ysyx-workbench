@@ -52,7 +52,8 @@ static struct rule {
   {"\\==", TK_EQ},        // equal
   {"\\!=", TK_UNEQ},      // unequal
   {"\\&&", TK_AND},       // and
-  {"\\*", TK_PTR}         // pointer de-reference
+  {"\\*", TK_PTR},        // pointer de-reference
+  {"\\$[$a-zA-Z][0-9a-zA-Z]", TK_REG} // register value
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -157,6 +158,11 @@ static bool make_token(char *e) {
             break;
           case TK_PTR:
             tokens[nr_token] = (Token) {TK_PTR};
+            nr_token++;
+            break;
+          case TK_REG:
+            tokens[nr_token] = (Token) {TK_REG};
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
             nr_token++;
             break;
           case TK_NOTYPE:
