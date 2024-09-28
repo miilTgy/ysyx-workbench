@@ -34,6 +34,7 @@ void init_wp_pool() {
   for (i = 0; i < NR_WP; i ++) {
     wp_pool[i].NO = i;
     wp_pool[i].next = (i == NR_WP - 1 ? NULL : &wp_pool[i + 1]);
+    wp_pool[i].used = false;
   }
 
   head = NULL;
@@ -42,22 +43,31 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 WP* new_wp() {
+  if (free_->next == NULL) {
+    printf("WatchpointERROR: no more space for creating watchpoints!\n");
+    return NULL;
+  }
+  
   WP* new = free_;
   free_ = free_->next; // remove first free wp
   if (head == NULL) {
     head = new;
+    head->used = true;
   } else {
     WP* temp = head;
-    while (temp->next != NULL) {
+    while (temp->next != NULL && temp->next->used != false) {
       temp = temp->next; // find the tail of head
     }
     temp->next = new; // head.append(free_); free_[0].pop();
+    new->used = true;
   }
   return new;
 }
 void create_awatchpoint() {
   WP* newp = new_wp();
+  if (newp != NULL) {
   printf("Successfully create watchpoint NO. %d next %d\n", newp->NO, newp->next->NO);
+  }
 }
 
 void free_wp(WP *wp) {
