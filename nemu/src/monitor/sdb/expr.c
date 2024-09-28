@@ -144,23 +144,19 @@ static bool make_token(char *e) {
             nr_token++;
             break;
           case TK_EQ:
-            // TODO equal expr function
             tokens[nr_token] = (Token) {TK_EQ};
             nr_token++;
             break;
           case TK_UNEQ:
-            // TODO unequal expr function
             // printf("token: unequal detacted!");
             tokens[nr_token] = (Token) {TK_UNEQ};
             nr_token++;
             break;
           case TK_AND:
-            // TODO and expr function
             tokens[nr_token] = (Token) {TK_AND};
             nr_token++;
             break;
           case TK_PTR:
-            // TODO pointer dereferencing
             tokens[nr_token] = (Token) {TK_PTR};
             nr_token++;
             break;
@@ -282,7 +278,7 @@ int op_pos(int p, int q) {
   int rtn = p;
   for(int i = p; i < q; i++){
     if (tokens[i].type != TK_NUM) {
-      /* Jump above enclose*/
+      /* Jump above parentheses*/
       if (tokens[i].type == TK_LP) {
         int cnt = 1;
         while (cnt != 0) {
@@ -294,7 +290,7 @@ int op_pos(int p, int q) {
           }
         } // jump to ')'
       }
-      /* Jump above enclose*/
+      /* Jump above parentheses*/
       if (tokens[i].type == '+' || tokens[i].type == '-') {
         rtn = (i > rtn) ? i : rtn;
         flg = true; // +/- found, *// forbidden
