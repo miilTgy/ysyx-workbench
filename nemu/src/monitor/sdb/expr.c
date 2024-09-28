@@ -148,7 +148,6 @@ static bool make_token(char *e) {
             nr_token++;
             break;
           case TK_UNEQ:
-            // printf("token: unequal detacted!");
             tokens[nr_token] = (Token) {TK_UNEQ};
             nr_token++;
             break;
@@ -240,7 +239,7 @@ uint64_t eval(int p, int q) {
     int op = op_pos(p, q);
     uint64_t val1 = 0;
     if (!op_is_unary(op)) {
-      val1 = eval(p, op - 1); // only binary operator needed
+      val1 = eval(p, op - 1); // only binary operator needed val1
     }
     uint64_t val2 = eval(op + 1, q);
 
