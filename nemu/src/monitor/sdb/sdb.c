@@ -126,6 +126,12 @@ static int cmd_x(char *args) {
   return 0;
 }
 
+void create_awatchpoint();
+static int cmd_w(char *args) {
+  create_awatchpoint();
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -140,6 +146,7 @@ static struct {
   { "info", "info r/w, Show register value OR Show watch point info", cmd_info},
   { "x", "x N EXPR, Scan memory, N is No. of address, EXPR is starting address", cmd_x},
   { "p", "p EXPR, Calculate the value of EXPR", cmd_p},
+  { "w", "w EXPR, Set watchpoint", cmd_w}
   /* TODO: Add more commands */
 
 };
