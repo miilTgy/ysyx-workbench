@@ -41,5 +41,32 @@ void init_wp_pool() {
 }
 
 /* TODO: Implement the functionality of watchpoint */
-WP* new_wp();
-void free_wp(WP *wp);
+WP* new_wp() {
+  WP* new = free_;
+  free_ = free_->next; // remove first free wp
+  if (head == NULL) {
+    head = new;
+  } else {
+    WP* temp = head;
+    while (temp->next != NULL) {
+      temp = temp->next; // find the tail of head
+    }
+    temp->next = new; // head.append(free_); free_[0].pop();
+  }
+  return new;
+}
+void free_wp(WP *wp) {
+  if (wp == NULL) {
+    assert(0);
+  } else if (wp == head) {
+    head = head->next;
+  } else {
+    WP* temp = head;
+    while (temp != NULL && temp->next != wp) {
+      temp = temp->next; // search wp in head
+    }
+    temp->next = temp->next->next; // break chain from here
+  }
+  wp->next = free_;
+  free_ = wp; // inseart wp at the begining of free_
+}
