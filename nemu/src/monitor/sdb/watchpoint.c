@@ -55,6 +55,11 @@ WP* new_wp() {
   }
   return new;
 }
+void create_awatchpoint() {
+  WP* newp = new_wp();
+  printf("Successfully create watchpoint NO. %d next %d\n", newp->NO, newp->next->NO);
+}
+
 void free_wp(WP *wp) {
   if (wp == NULL) {
     assert(0);
