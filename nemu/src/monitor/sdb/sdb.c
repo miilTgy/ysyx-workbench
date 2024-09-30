@@ -134,10 +134,10 @@ static int cmd_w(char *args) {
   return 0;
 }
 
-/*
-void free_wp(WP *wp);*/
+int delete_watchpoint(int NO);
 static int cmd_d(char *args) {
-  return 0;
+  char *dNO = strtok(NULL, " ");
+  return delete_watchpoint(atoi(dNO));
 }
 
 static int cmd_help(char *args);
