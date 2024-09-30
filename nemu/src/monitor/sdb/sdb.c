@@ -69,6 +69,7 @@ static int cmd_si(char *args) {
   return 0;
 }
 
+void desplay_wp();
 static int cmd_info(char *args) {
   char *target = strtok(NULL, " ");
   if (target == NULL) {
@@ -79,7 +80,8 @@ static int cmd_info(char *args) {
   if (strcmp(target, "r") == 0) {
     isa_reg_display();
   } else {
-    printf("watchpoint featre under development...\n");
+    // printf("watchpoint featre under development...\n");
+    desplay_wp();
   }
   
   return 0;

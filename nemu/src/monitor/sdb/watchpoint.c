@@ -85,3 +85,15 @@ void free_wp(WP *wp) {
   wp->next = free_;
   free_ = wp; // inseart wp at the begining of free_
 }
+
+void desplay_wp() {
+  printf("Actived watchpoints:\n");
+  WP* wp = head;
+  if (wp == NULL) {
+    printf("No watchpoint activated!");
+  } else {
+    while (wp != NULL) {
+      printf("Watchpoint No.%d: TODO\n", wp->NO);
+    }
+  }
+}
