@@ -90,7 +90,7 @@ void desplay_wp() {
   printf("Actived watchpoints:\n");
   WP* wp = head;
   if (wp == NULL) {
-    printf("No watchpoint activated!\n");
+    printf("\033[0;35mNo watchpoint activated!\033[m\n");
   } else {
     while (wp != NULL) {
       printf("Watchpoint No.%d: TODO\n", wp->NO);
