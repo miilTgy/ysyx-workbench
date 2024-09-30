@@ -76,7 +76,7 @@ static int cmd_info(char *args) {
     printf("ERROR: missing info target: r/w\n");
     return 0;
   }
-  printf("target=%s\n", target);
+  // printf("target=%s\n", target);
   if (strcmp(target, "r") == 0) {
     isa_reg_display();
   } else {
