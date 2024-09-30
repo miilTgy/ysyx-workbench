@@ -66,7 +66,11 @@ WP* new_wp() {
 void create_awatchpoint() {
   WP* newp = new_wp();
   if (newp != NULL) {
-  printf("Successfully create watchpoint NO. %d next %d\n", newp->NO, newp->next->NO);
+    if (newp->next != NULL) {
+      printf("Create watchpoint NO. %d next %d\n", newp->NO, newp->next->NO);
+    } else {
+      printf("Create watchpoint NO. %d next NULL\n", newp->NO);
+    }
   }
 }
 
@@ -97,24 +101,34 @@ int delete_watchpoint(int NO) {
 }
 */
 void desplay_wp() {
+  for (size_t i = 0; i < NR_WP; i++) {
+    printf("NO.%d, used: %d\n", wp_pool[i].NO, wp_pool[i].used);
+  }
+  
   printf("Actived watchpoints:\n");
   WP* wp = head;
   if (wp == NULL) {
     printf("\033[0;35mNo watchpoint activated!\033[m\n");
   } else {
-    while (wp->used != false) {
-      printf("  Watchpoint No.\033[0;35m%d\033[m: TODO\n", wp->NO);
+    while (wp->used != false && wp->next != NULL) {
+      printf("  Watchpoint No.\033[0;35m%d\033[m, next=\033[0;35m%d\033[m\n", wp->NO, wp->next->NO);
       wp = wp->next;
+    }
+    if (wp->next == NULL) {
+      printf("  Watchpoint No.\033[0;35m%d\033[m, next=\033[0;35mNULL\033[m\n", wp->NO);
     }
   }
   printf("Freed watchpoints:\n");
   WP *nowp = free_;
-  if (nowp == NULL) {
+  if (nowp == NULL || nowp->used == true) {
     printf("\033[0;35mNo watchpoint freed!\033[m\n");
   } else {
-    while (nowp->used == false) {
-      printf("  Watchpoint No.\033[0;35m%d\033[m: TODO\n", wp->NO);
-          nowp = nowp->next;
+    while (nowp->used == false && nowp->next != NULL) {
+      printf("  Watchpoint No.\033[0;35m%d\033[m, next=\033[0;35m%d\033[m\n", nowp->NO, nowp->next->NO);
+      nowp = nowp->next;
+    }
+    if (nowp->next == NULL) {
+      printf("  Watchpoint No.\033[0;35m%d\033[m, next=\033[0;35mNULL\033[m\n", nowp->NO);
     }
   }
   
