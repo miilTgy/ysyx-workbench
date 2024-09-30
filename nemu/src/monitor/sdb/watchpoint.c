@@ -85,7 +85,17 @@ void free_wp(WP *wp) {
   wp->next = free_;
   free_ = wp; // inseart wp at the begining of free_
 }
-
+/*
+int delete_watchpoint(int NO) { 
+  WP* temp = head;
+  while (temp->used != false) {
+    if (temp->NO == NO) {
+      free_wp(temp);
+    }
+    temp = temp->next;
+  }
+}
+*/
 void desplay_wp() {
   printf("Actived watchpoints:\n");
   WP* wp = head;
@@ -97,4 +107,15 @@ void desplay_wp() {
       wp = wp->next;
     }
   }
+  printf("Freed watchpoints:\n");
+  WP *nowp = free_;
+  if (nowp == NULL) {
+    printf("\033[0;35mNo watchpoint freed!\033[m\n");
+  } else {
+    while (nowp->used == false) {
+      printf("  Watchpoint No.\033[0;35m%d\033[m: TODO\n", wp->NO);
+          nowp = nowp->next;
+    }
+  }
+  
 }

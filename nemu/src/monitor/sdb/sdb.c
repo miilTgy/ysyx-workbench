@@ -134,6 +134,12 @@ static int cmd_w(char *args) {
   return 0;
 }
 
+/*
+void free_wp(WP *wp);*/
+static int cmd_d(char *args) {
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -148,7 +154,8 @@ static struct {
   { "info", "info r/w, Show register value OR Show watch point info", cmd_info},
   { "x", "x N EXPR, Scan memory, N is No. of address, EXPR is starting address", cmd_x},
   { "p", "p EXPR, Calculate the value of EXPR", cmd_p},
-  { "w", "w EXPR, Set watchpoint", cmd_w}
+  { "w", "w EXPR, Set watchpoint", cmd_w},
+  { "d", "d NO , Delete watchpoint NO", cmd_d}
   /* TODO: Add more commands */
 
 };
