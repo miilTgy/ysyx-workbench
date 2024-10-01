@@ -67,6 +67,7 @@ WP* new_wp() {
     new->head_next = NULL; // set new as end of head
     new->used = true;
   }
+  new->free_next = NULL;
   return new;
 }
 void create_awatchpoint() {
