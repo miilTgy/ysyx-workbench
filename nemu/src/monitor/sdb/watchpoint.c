@@ -83,6 +83,7 @@ void create_awatchpoint() {
 void free_wp(WP *wp) {
   if (wp->used == false) {
     printf("Watchpoint unused\n");
+    return;
   } else if (wp == head) {
     if (head->head_next == NULL) {
       head = NULL;
@@ -104,14 +105,14 @@ void free_wp(WP *wp) {
 
 int delete_watchpoint(int NO) { 
   for (size_t i = 0; i < NR_WP; i++) {
-    if (wp_pool[i].NO == NO) {
+    if (wp_pool[i].NO == NO && wp_pool[i].used) {
       free_wp(&wp_pool[i]);
       printf("Delete watchpoint NO.%d\n", NO);
       return 0;
     }
   }
   printf("Watchpoint NO.%d not activated!\n", NO);
-  return -1;
+  return 0;
 }
 
 void desplay_wp() {
