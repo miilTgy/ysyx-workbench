@@ -99,6 +99,7 @@ void free_wp(WP *wp) {
     temp->head_next = temp->head_next->head_next; // break chain from here
   }
   wp->used = false;
+  wp->head_next = NULL;
   wp->free_next = free_;
   free_ = wp; // inseart wp at the begining of free_
 }
