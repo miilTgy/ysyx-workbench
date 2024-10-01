@@ -137,7 +137,13 @@ static int cmd_w(char *args) {
 int delete_watchpoint(int NO);
 static int cmd_d(char *args) {
   char *dNO = strtok(NULL, " ");
-  return delete_watchpoint(atoi(dNO));
+  if (dNO != NULL) {
+    return delete_watchpoint(atoi(dNO));
+  } else {
+    printf("ERROR: watchpoint NO can't be NULL.\n");
+    return 0;
+  }
+  
 }
 
 static int cmd_help(char *args);
