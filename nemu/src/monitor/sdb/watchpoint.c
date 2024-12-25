@@ -23,6 +23,7 @@ typedef struct watchpoint {
 
   /* TODO: Add more members if necessary */
   bool used;
+  char expr[128];
   struct watchpoint *head_next;
   struct watchpoint *free_next;
 
