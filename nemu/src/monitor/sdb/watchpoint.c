@@ -47,7 +47,7 @@ void init_wp_pool() {
 }
 
 /* TODO: Implement the functionality of watchpoint */
-WP* new_wp() {
+WP* new_wp(char *expr) {
   if (free_->free_next == NULL) {
     printf("WatchpointERROR: no more space for creating watchpoints!\n");
     return NULL;
@@ -64,15 +64,17 @@ WP* new_wp() {
       temp = temp->head_next; // find the tail of head
     }
     printf("end of head is %d\n", temp->NO);
-    temp->head_next = new; // head.append(free_); free_[0].pop();
+    temp->head_next = new; // head.append free_; free_[0].pop();
     new->head_next = NULL; // set new as end of head
     new->used = true;
   }
+  printf("new watchpoint expr=%s\n", expr);
+  strcpy(new->expr, expr);
   new->free_next = NULL;
   return new;
 }
-void create_awatchpoint() {
-  WP* newp = new_wp();
+void create_awatchpoint(char *expr) {
+  WP* newp = new_wp(expr);
   if (newp != NULL) {
     if (newp->head_next != NULL) {
       printf("Create watchpoint NO. %d next %d\n", newp->NO, newp->head_next->NO);
@@ -156,11 +158,11 @@ void desplay_wp() {
     printf("\033[0;35mNo watchpoint activated!\033[m\n");
   } else {
     while (wp->used != false && wp->head_next != NULL) {
-      printf("  Watchpoint No.\033[0;35m%d\033[m, hnext=\033[0;35m%d\033[m\n", wp->NO, wp->head_next->NO);
+      printf("  Watchpoint No.\033[0;35m%d\033[m, hnext=\033[0;35m%d\033[m, expr=\033[0;35m%s\033[m\n", wp->NO, wp->head_next->NO, wp->expr);
       wp = wp->head_next;
     }
     if (wp->head_next == NULL) {
-      printf("  Watchpoint No.\033[0;35m%d\033[m, hnext=\033[0;35mNULL\033[m\n", wp->NO);
+      printf("  Watchpoint No.\033[0;35m%d\033[m, hnext=\033[0;35mNULL\033[m, expr=\033[0;35m%s\033[m\n", wp->NO, wp->expr);
     }
   }
   printf("Freed watchpoints:\n");

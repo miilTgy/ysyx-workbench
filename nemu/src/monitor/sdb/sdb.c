@@ -132,7 +132,12 @@ static int cmd_x(char *args) {
 
 void create_awatchpoint();
 static int cmd_w(char *args) {
-  create_awatchpoint();
+  char *expr = strtok(NULL, " ");
+  if (expr == NULL) {
+    printf("ERROR: watchpoint expression can't be NULL.\n");
+    return 0;
+  }
+  create_awatchpoint(expr);
   return 0;
 }
 
