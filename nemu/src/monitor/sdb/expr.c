@@ -53,7 +53,7 @@ static struct rule {
   {"\\!=", TK_UNEQ},      // unequal
   {"\\&&", TK_AND},       // and
   {"\\*", TK_PTR},        // pointer de-reference
-  {"\\$[$a-zA-Z][0-9a-zA-Z]", TK_REG} // register value
+  {"\\$[$a-zA-Z][0-9a-zA-Z]{1,2}", TK_REG} // register value
 };
 
 #define NR_REGEX ARRLEN(rules)
