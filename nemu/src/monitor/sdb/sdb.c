@@ -113,17 +113,19 @@ static int cmd_x(char *args) {
     printf("Invalid N: A number is required\n");
     return 0;
   }
-  if ((scan_addr[0] != '0') || (scan_addr[1] != 'x') || (strspn(scan_num, "0123456789x")!=strlen(scan_num))) {
-    printf("Invalid Address: A hex number required.\n");
-    return 0;
-  }
+  // if ((scan_addr[0] != '0') || (scan_addr[1] != 'x') || (strspn(scan_num, "0123456789x")!=strlen(scan_num))) {
+  //   printf("Invalid Address: A hex number required.\n");
+  //   return 0;
+  // }
   int num = 0;
   sscanf( scan_num, "%d", &num);
   paddr_t addr = 0;
   sscanf( scan_addr, "%x", &addr);
+  bool flag = true;
+  word_t addr_to_read = expr(scan_addr, &flag);
   for (int i = 0; i < num; i++) {
-    printf("Address=%x, value=%08lx\n", addr, paddr_read(addr, 4));
-    addr += 4;
+    printf("Address=0x%lx, value=0x%08lx\n", addr_to_read, paddr_read(addr_to_read, 4));
+    addr_to_read += 4;
   }
   return 0;
 }
