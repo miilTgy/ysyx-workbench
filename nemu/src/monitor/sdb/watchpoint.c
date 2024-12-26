@@ -24,6 +24,7 @@ typedef struct watchpoint {
   /* TODO: Add more members if necessary */
   bool used;
   char expr[128];
+  word_t value;
   struct watchpoint *head_next;
   struct watchpoint *free_next;
 
@@ -40,6 +41,8 @@ void init_wp_pool() {
     wp_pool[i].free_next = (i == NR_WP - 1 ? NULL : &wp_pool[i + 1]);
     wp_pool[i].used = false;
     wp_pool[i].head_next = NULL;
+    wp_pool[i].expr[0] = '\0';
+    wp_pool[i].value = 0;
   }
 
   head = NULL;
@@ -47,7 +50,7 @@ void init_wp_pool() {
 }
 
 /* TODO: Implement the functionality of watchpoint */
-WP* new_wp(char *expr) {
+WP* new_wp(char *wpexpr) {
   if (free_->free_next == NULL) {
     printf("WatchpointERROR: no more space for creating watchpoints!\n");
     return NULL;
@@ -68,13 +71,15 @@ WP* new_wp(char *expr) {
     new->head_next = NULL; // set new as end of head
     new->used = true;
   }
-  printf("new watchpoint expr=%s\n", expr);
-  strcpy(new->expr, expr);
+  printf("new watchpoint expr=%s\n", wpexpr);
+  strcpy(new->expr, wpexpr);
+  bool success = true;
+  new->value = expr(wpexpr, &success);
   new->free_next = NULL;
   return new;
 }
-void create_awatchpoint(char *expr) {
-  WP* newp = new_wp(expr);
+void create_awatchpoint(char *wpexpr) {
+  WP* newp = new_wp(wpexpr);
   if (newp != NULL) {
     if (newp->head_next != NULL) {
       printf("Create watchpoint NO. %d next %d\n", newp->NO, newp->head_next->NO);
@@ -105,6 +110,8 @@ void free_wp(WP *wp) {
   wp->used = false;
   wp->head_next = NULL;
   wp->free_next = free_;
+  wp->expr[0] = '\0';
+  wp->value = 0;
   free_ = wp; // inseart wp at the begining of free_
 }
 
@@ -146,9 +153,14 @@ void desplay_wp() {
       printf("hnext: %d, ", wp_pool[i].head_next->NO);
     }
     if (wp_pool[i].free_next == NULL) {
-      printf("fnext: NULL\n");
+      printf("fnext: NULL, ");
     } else {
-      printf("fnext: %d\n", wp_pool[i].free_next->NO);
+      printf("fnext: %d, ", wp_pool[i].free_next->NO);
+    }
+    if (wp_pool[i].expr[0] == '\0') {
+      printf("expr: NULL=%lu\n", wp_pool[i].value);
+    } else {
+      printf("expr: %s=%lu\n", wp_pool[i].expr, wp_pool[i].value);
     }
   }
   
