@@ -127,6 +127,35 @@ int delete_watchpoint(int NO) {
   return 0;
 }
 
+bool update_wp_changed(WP *wp, word_t *old_value) {
+  bool success = true;
+  word_t new_value = expr(wp->expr, &success);
+  if (new_value != wp->value) {
+    *old_value = wp->value;
+    wp->value = new_value;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void scan_all_wp(bool *stop) {
+  bool wp_changed = false;
+  for (int i = 0; i < NR_WP; i++) {
+    if (wp_pool[i].used == true) {
+      word_t old_value = 0;
+      if (update_wp_changed(&wp_pool[i], &old_value)) {
+        wp_changed = true;
+        printf("WP triggered NO.\033[1;34m%d\033[0m, "
+               "expr: \033[1;34m%s\033[0m=\033[1;34m%lu\033[0m, "
+               "old=\033[1;34m%lu\033[0m\n",
+               wp_pool[i].NO, wp_pool[i].expr, wp_pool[i].value, old_value);
+      }
+    }
+  }
+  *stop = wp_changed;
+}
+
 void desplay_wp() {
   if (head == NULL) {
     printf("head=NULL\n");
