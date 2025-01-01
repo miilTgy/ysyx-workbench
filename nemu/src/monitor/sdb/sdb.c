@@ -132,7 +132,8 @@ static int cmd_x(char *args) {
 
 void create_awatchpoint();
 static int cmd_w(char *args) {
-  char *wpexpr = strtok(NULL, " ");
+  // char *wpexpr = strtok(NULL, " ");
+  char *wpexpr = args;
   if (wpexpr == NULL) {
     printf("ERROR: watchpoint expression can't be NULL.\n");
     return 0;
