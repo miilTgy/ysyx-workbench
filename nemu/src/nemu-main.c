@@ -1,3 +1,13 @@
+/*
+ * @Author: Zeng GuangYi tgy_scut2021@outlook.com
+ * @Date: 2024-06-26 02:20:39
+ * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
+ * @LastEditTime: 2025-01-07 00:03:35
+ * @FilePath: /nemu/src/nemu-main.c
+ * @Description: 
+ * 
+ * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
+ */
 /***************************************************************************************
 * Copyright (c) 2014-2022 Zihao Yu, Nanjing University
 *
@@ -60,6 +70,7 @@ int main(int argc, char *argv[]) {
         printf("Unmatch calculate result occured! ");
         printf("Require: %lu    ", answer);
         printf("But get: %lu    \n", result);
+        // assert(0);
       }
       // printf("%lu\n", result);
     } else {
@@ -69,7 +80,7 @@ int main(int argc, char *argv[]) {
     }
     i++;
   }
-
+  return 0;
   // expr();
 #else
   /* Start engine. */
