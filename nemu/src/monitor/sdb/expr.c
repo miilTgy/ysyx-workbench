@@ -99,8 +99,8 @@ static bool make_token(char *e) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-        Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
-            i, rules[i].regex, position, substr_len, substr_len, substr_start);
+        // Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
+        //     i, rules[i].regex, position, substr_len, substr_len, substr_start);
 
         position += substr_len;
 
@@ -225,7 +225,8 @@ uint64_t eval(int p, int q) {
      * Return the value of the number.
      */
     if (tokens[p].type == TK_NUM) {
-      return atoi(tokens[p].str);
+      //return atoi(tokens[p].str);
+      return strtol(tokens[p].str, NULL, 10);
     } else if (tokens[p].type == TK_HEX) {
       uint64_t hex_res;
       char *endptr;
@@ -248,11 +249,11 @@ uint64_t eval(int p, int q) {
   }
   else {
     int op = op_pos(p, q);
-    uint64_t val1 = 0;
+    int64_t val1 = 0; //TODO:
     if (!op_is_unary(op)) {
       val1 = eval(p, op - 1); // only binary operator needed val1
     }
-    uint64_t val2 = eval(op + 1, q);
+    int64_t val2 = eval(op + 1, q); // [x]
 
     int op_type = tokens[op].type;
     switch (op_type) {
