@@ -259,7 +259,7 @@ uint64_t eval(int p, int q) {
       case '+': {return val1 + val2;}
       case '-': {return val1 - val2;}
       case '*': {return val1 * val2;}
-      case '/': {return val1 / val2;}
+      case '/': {if(val2==0){printf("Expr ERROR: div-by-zero!\n"); return 0;}else return val1 / val2;}
       case TK_EQ: {return val1 == val2;}
       case TK_UNEQ: {return val1 != val2;}
       case TK_AND: {return val1 && val2;}
