@@ -63,8 +63,8 @@ void gen_rand_op() {
     struct timeval tv;        // get current time us
     gettimeofday(&tv, NULL);  // get current time us
     srand(tv.tv_usec);        // set seed
-    char op[4] = "+-*";
-    buf[buf_indx] = op[rand() % 3];
+    char op[5] = "+-*/";
+    buf[buf_indx] = op[rand() % 4];
     buf_indx++;
   }
 }
@@ -95,20 +95,41 @@ static int gen_rand_expr() {
     default: 
       rr = gen_rand_expr();
       if (rr == 1) return 1; // check oversize every recursive level
-      if (rand() % 4 == 3) {
-        gen_div();
-        gen('(');
-        gen('6');
-        gen(')');
+      // if (rand() % 4 == 3) {
+      //   gen_div();
+      //   gen('(');
+      //   gen('6');
+      //   gen(')');
+      //   gen_rand_op();
+      // } else {
         gen_rand_op();
-      } else {
-        gen_rand_op();
-      }
+ //     }
       rr = gen_rand_expr();
       if (rr == 1) return 1; // check oversize every recursive level
       break;
   }
   return 0;
+}
+
+unsigned long long  expr_spec(char *expr){
+
+    sprintf(code_buf, code_format, expr);
+
+    FILE *fp = fopen("/tmp/.code.c", "w");
+    assert(fp != NULL);
+    fputs(code_buf, fp);
+    fclose(fp);
+
+    int ret = system("gcc -Werror /tmp/.code.c -o /tmp/.expr");
+    if (ret != 0) return (-1);
+
+    fp = popen("/tmp/.expr", "r");
+    assert(fp != NULL);
+
+    unsigned long long result;
+    ret = fscanf(fp, "%llu", &result);
+    pclose(fp);
+    return result;
 }
 
 int main(int argc, char *argv[]) {
@@ -135,8 +156,12 @@ int main(int argc, char *argv[]) {
     fputs(code_buf, fp);
     fclose(fp);
 
-    int ret = system("gcc /tmp/.code.c -o /tmp/.expr");
-    if (ret != 0) continue;
+  // negative appear, error come up
+    int ret = system("gcc -Wdiv-by-zero -Wconversion -Werror /tmp/.code.c -o /tmp/.expr");
+    if (ret != 0) {
+      loop++; 
+      continue;
+    }
 
     fp = popen("/tmp/.expr", "r");
     assert(fp != NULL);
