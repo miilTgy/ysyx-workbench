@@ -45,7 +45,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   /* TODO: check watchpoint triggered */
   bool stop = false;
   scan_all_wp(&stop);
-  if (stop == true) {
+  if (stop == true && nemu_state.state == NEMU_RUNNING) {
     nemu_state.state = NEMU_STOP;
   }
 #endif
