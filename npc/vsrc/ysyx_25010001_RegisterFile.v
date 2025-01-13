@@ -1,5 +1,7 @@
 module ysyx_25010001_RegisterFile #(ADDR_WIDTH = 1, DATA_WIDTH = 1) (
   input clk,
+  input [DATA_WIDTH-1:0] rdata,
+  input [ADDR_WIDTH-1:0] raddr,
   input [DATA_WIDTH-1:0] wdata,
   input [ADDR_WIDTH-1:0] waddr,
   input wen
