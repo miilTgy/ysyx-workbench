@@ -1,8 +1,33 @@
+TOP ?= top
+PREFIX = ysyx_25010001_
+
+BUILD_PATH = obj_dir/
+VERILATOR_CFLAGS += -MMD -O3 --x-assign 1 --x-initial unique -cc --trace -j 16
+VERILATOR_TB += $(shell find $(abspath ./csrc) -name "tb_$(TOP).cpp")
+VERILATOR_TOP = --top-module $(PREFIX)$(TOP)
+VERILATOR_EXE = obj_dir/V$(PREFIX)$(TOP)
+
+CSRC += $(shell find $(abspath ./csrc) -name "*.cpp")
+VSRC += $(shell find $(abspath ./vsrc) -name "*.v")
+
+.PHONY: sim genc clean
+
 all:
 	@echo "Write this Makefile by your self."
 
-sim:
+sim: $(VERILATOR_TB)
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	@echo "Write this Makefile by your self."
+	@echo "sim vsrc ="
+	@$(foreach file, $(VSRC), echo "	$(file)";)
+	@echo "exe ="
+	@$(foreach file, $(VERILATOR_TB), echo "	$(file)";)
+	verilator $(VERILATOR_CFLAGS) $(VERILATOR_TOP) $(VSRC) \
+		-exe --build $(VERILATOR_TB)
+	time $(VERILATOR_EXE) +verilator+rand+reset+1
 
+genc: vsrc/$(PREFIX)$(TOP).v clean
+	verilator $(VERILATOR_CFLAGS) $(VERILATOR_TOP) $(VSRC)
+
+clean:
+	rm -rf ./obj_dir
 include ../Makefile
