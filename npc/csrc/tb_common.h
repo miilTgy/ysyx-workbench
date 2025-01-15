@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-01-15 23:33:43
+ * @LastEditTime: 2025-01-15 23:52:11
  * @FilePath: /npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -46,6 +46,14 @@ public:
     VerilatedContext *contextp;
     VerilatedVcdC *m_trace;
 
+    /**
+     * @description: Constructor:
+     *                  1. instantiate dut contextp m_trace
+     *                  2. set trace and trace file name.
+     * @param {int}   argc to Get initial value.
+     * @param {char} *argv to Get initial value.
+     * @return {*}
+     */
     TESTBENCH(int argc, char *argv[]) {
         std::cout << "start constructiog" << std::endl;
         Verilated::traceEverOn(true);
@@ -64,6 +72,10 @@ public:
         std::cout << "Open File" << std::endl;
     }
 
+    /**
+     * @description: Destructor
+     * @return {*}
+     */
     ~TESTBENCH(void) {
         m_trace->close();
         delete m_trace;
@@ -71,17 +83,32 @@ public:
         delete contextp;
     }
 
+    /**
+     * @description: Init sim, must called before any sim.
+     * @param {  } dut
+     * @return {*}
+     */
     void inline sim_init() {
         dut->eval();
         m_trace->dump(contextp->time());
     }
 
+    /**
+     * @description: Verify clk and set clk to value i.
+     * @param {CData} i Value passed to clk.
+     * @return {*}
+     */
     void inline set_clk(CData i) {
         if (module_type == sequential) {
             dut->clk = i;
         }
     }
 
+    /**
+     * @description: sim 1 cycle (clk=0 and clk=1)
+     * @param {int} i # of cycles to sim.
+     * @return {*}
+     */
     void inline sim_cycles(int i) {
         for (int j=0; j<i; j++) {
             set_clk(0);
@@ -95,6 +122,10 @@ public:
         }
     }
 
+    /**
+     * @description: Generate 64-bit random num.
+     * @return {*}
+     */
     uint64_t rand64() {
         std::random_device rd;
         uint32_t seed = rd();
