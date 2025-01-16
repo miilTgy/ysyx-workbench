@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-01-17 01:55:20
+ * @LastEditTime: 2025-01-17 04:12:45
  * @FilePath: /npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -32,33 +32,6 @@
 
 #define TB(a) __TB__->a
 #define DUT(a) __DUT__->a
-
-#define step(statements) do { \
-            TB(toggle_clk()); \
-            TB(__DUT__->eval()); \
-            TB(contextp->timeInc(1)); \
-            TB(m_trace->dump(TB(contextp->time()))); \
-            TB(toggle_clk()); \
-            TB(__DUT__->eval();) \
-            {statements} \
-            TB(__DUT__->eval()); \
-            TB(contextp->timeInc(1)); \
-            TB(m_trace->dump(TB(contextp->time()))); \
-        } while (0)
-
-#define this_step(statements) do { \
-            this->toggle_clk(); \
-            this->__DUT__->eval(); \
-            {statements} \
-            this->__DUT__->eval(); \
-            this->contextp->timeInc(1); \
-            this->m_trace->dump(this->contextp->time()); \
-        } while (0)
-
-
-enum Module_type {
-    sequential, combinational
-};
 
 
 // Check if has rst signal
@@ -160,6 +133,19 @@ public:
             << contextp->time() << std::endl;
         }
     }
+
+    /**
+     * @description: sim 1 combinational step
+     * @param {function<void()>} codeBlock codeClock that you want
+     *                           to exec before setp_comb.
+     * @return {*}
+     */
+    void inline step_comb(std::function<void()> codeBlock) {
+        codeBlock();
+        this->__DUT__->eval();
+        this->contextp->timeInc(1);
+        this->m_trace->dump(this->contextp->time());
+    }
 };
 
 template<class MODULE>
@@ -169,12 +155,16 @@ public:
         TESTBENCH_BASE<MODULE>(argc, argv) { }
 
     /**
-     * @description: Init sim, must called before any sim
-     *               to make sure waveform at time=0 was
-     *               dumped.
+     * @description: Init sim core, dump at time 0.
+     * @param {function<void()>} codeBlock that you want to exec.
      * @return {*}
      */
-    virtual void inline sim_init() =0;
+    void inline init_core(std::function<void()> codeBlock) {
+        codeBlock();
+        this->__DUT__->eval();
+        this->__DUT__->clk = 1;
+        this->m_trace->dump(this->contextp->time());
+    }
 
     /**
      * @description: Verify clk and set clk to value i.
@@ -195,29 +185,41 @@ public:
 
     /**
      * @description: sim 1 step.
+     * @param {function<void()>} codeBlock that you want to exec.
      * @return {*}
      */
-    void inline single_step() {
-        toggle_clk();
-        this->__DUT__->eval();
-        this->contextp->timeInc(1);
-        this->m_trace->dump(this->contextp->time());
+    void inline single_step_seq(std::function<void()> codeBlock) {
+        this->step_comb([&](){
+            toggle_clk();
+            this->__DUT__->eval();
+            codeBlock();
+        });
     }
 
     /**
-     * @description: sim i cycles (2 steps per cycle)
+     * @description: sim 1 un-empty cycle (2 steps per cycle).
+     * @param {function<void()>} codeBlock that you want to exec.
+     * @return {*}
+     */
+    void inline cycles(std::function<void()> codeBlock) {
+        this->step_comb([this](){ this->toggle_clk(); });
+        single_step_seq([&](){ codeBlock(); });
+    }
+
+    /**
+     * @description: sim i empty cycles (2 steps per cycle).
      * @param {int} i # of cycles to sim.
      * @return {*}
      */
     void inline cycles(int i) {
         for (int j=0; j<i*2; j++) {
-            single_step();
+            single_step_seq([](){});
         }
     }
 };
 
+
 // main template of TESTBENCH_TYPE
-// sequential logic with clk & without rst
 template<class MODULE, bool rst_true, bool clk_true>
 class TESTBENCH_TYPE : public TESTBENCH_CLK<MODULE> {
 public:
@@ -225,6 +227,7 @@ public:
     : TESTBENCH_CLK<MODULE>(argc, argv){}
 };
 
+// sequential logic without rst & with clk
 template<class MODULE>
 class TESTBENCH_TYPE<MODULE, false, true> : public TESTBENCH_CLK<MODULE> {
 public:
@@ -237,15 +240,13 @@ public:
      *               dumped.
      * @return {*}
      */
-    void inline sim_init() override {
-        this->__DUT__->eval();
-        this->__DUT__->clk = 1;
-        this->m_trace->dump(this->contextp->time());
+    void inline sim_init() {
+        this->init_core([](){ });
     }
 };
 
 
-// sequential logic with clk & with rst
+// sequential logic with rst & with clk
 template<class MODULE>
 class TESTBENCH_TYPE<MODULE, true, true> : public TESTBENCH_CLK<MODULE> {
 public:
@@ -258,11 +259,8 @@ public:
      *               dumped.
      * @return {*}
      */
-    void inline sim_init() override {
-        this->__DUT__->rst = 0;
-        this->__DUT__->eval();
-        this->__DUT__->clk = 1;
-        this->m_trace->dump(this->contextp->time());
+    void inline sim_init() {
+        this->init_core([this](){ this->__DUT__->rst = 0; });
     }
 
     /**
@@ -272,10 +270,8 @@ public:
      * @return {*}
      */
     void inline sim_reset() {
-        this->single_step();
-        this_step({ this->__DUT__->rst = 1; });
-        this->single_step();
-        this_step({ this->__DUT__->rst = 0; });
+        this->cycles([this](){ this->__DUT__->rst = 1; });
+        this->cycles([this](){ this->__DUT__->rst = 0; });
     }
 };
 
