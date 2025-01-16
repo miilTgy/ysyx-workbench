@@ -15,7 +15,7 @@
 TESTBENCH<Vysyx_25010001_RegisterFile> *__TB__;
 
 int main(int argc, char *argv[]) {
-    __TB__ = new TESTBENCH<Vysyx_25010001_RegisterFile>(argc, argv, sequential);
+    __TB__ = new TESTBENCH<Vysyx_25010001_RegisterFile>(argc, argv);
     TB(sim_init());
 
     TB(cycles(3));
@@ -27,7 +27,6 @@ int main(int argc, char *argv[]) {
         step({
             set_write(i, tmp); set_read(last);
         });
-        std::cout << i << std::endl;
         read_data = TB(DUT(rdata));
         TB(check_eq(last_data, read_data));
         last_data = tmp;
@@ -36,5 +35,5 @@ int main(int argc, char *argv[]) {
     TB(cycles(10));
 
     TB(~TESTBENCH());
-    exit(EXIT_SUCCESS);    
+    exit(EXIT_SUCCESS);
 }
