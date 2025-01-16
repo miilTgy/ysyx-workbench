@@ -24,11 +24,14 @@ int main(int argc, char *argv[]) {
     for (int i=1; i<32; i++) {
         vluint64_t tmp = TB(rand64());
         vluint64_t read_data = 0;
-        step({
+
+        TB(cycles)([&](){
             set_write(i, tmp); set_read(last);
         });
+
         read_data = TB(DUT(rdata));
         TB(check_eq(last_data, read_data));
+
         last_data = tmp;
         last = i;
     }
