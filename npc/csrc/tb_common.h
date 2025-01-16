@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-01-16 01:45:54
+ * @LastEditTime: 2025-01-17 01:55:20
  * @FilePath: /npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -38,12 +38,21 @@
             TB(__DUT__->eval()); \
             TB(contextp->timeInc(1)); \
             TB(m_trace->dump(TB(contextp->time()))); \
-                TB(toggle_clk()); \
-                TB(__DUT__->eval();) \
-                {statements} \
-                TB(__DUT__->eval()); \
-                TB(contextp->timeInc(1)); \
-                TB(m_trace->dump(TB(contextp->time()))); \
+            TB(toggle_clk()); \
+            TB(__DUT__->eval();) \
+            {statements} \
+            TB(__DUT__->eval()); \
+            TB(contextp->timeInc(1)); \
+            TB(m_trace->dump(TB(contextp->time()))); \
+        } while (0)
+
+#define this_step(statements) do { \
+            this->toggle_clk(); \
+            this->__DUT__->eval(); \
+            {statements} \
+            this->__DUT__->eval(); \
+            this->contextp->timeInc(1); \
+            this->m_trace->dump(this->contextp->time()); \
         } while (0)
 
 
@@ -51,11 +60,27 @@ enum Module_type {
     sequential, combinational
 };
 
-template<class MODULE> class TESTBENCH {
-private:
-    Module_type module_type;
-    
-public:
+
+// Check if has rst signal
+template<class, class U = void>
+struct has_rst : std::false_type { };
+
+template<class T>
+struct has_rst<T, std::__void_t<decltype(T::rst)>> : std::true_type { };
+
+
+// Check if has clk port
+template<class, class U = void>
+struct has_clk : std::false_type { };
+
+template<class T>
+struct has_clk<T, std::__void_t<decltype(T::clk)>> : std::true_type { };
+
+
+
+template<class MODULE>
+class TESTBENCH_BASE {
+public:  
     MODULE *__DUT__;
     VerilatedContext *contextp;
     VerilatedVcdC *m_trace;
@@ -72,9 +97,8 @@ public:
      *                      (sequential or combinational?)
      * @return {*}
      */
-    TESTBENCH(int argc, char *argv[], Module_type module_type) {
+    TESTBENCH_BASE(int argc, char *argv[]) {
         std::cout << "start constructiog" << std::endl;
-        this->module_type = module_type;
         Verilated::traceEverOn(true);
         Verilated::commandArgs(argc, argv);
         __DUT__ = new MODULE;
@@ -95,65 +119,12 @@ public:
      * @description: Destructor
      * @return {*}
      */
-    ~TESTBENCH(void) {
+    ~TESTBENCH_BASE(void) {
         std::cout << "sim finished." << std::endl;
         m_trace->close();
         delete m_trace;
         delete __DUT__;
         delete contextp;
-    }
-
-    /**
-     * @description: Init sim, must called before any sim.
-     * @return {*}
-     */
-    void inline sim_init() {
-        __DUT__->eval();
-        if (module_type == sequential) {
-            __DUT__->clk = 1;
-        }
-        m_trace->dump(contextp->time());
-    }
-
-    /**
-     * @description: Verify clk and set clk to value i.
-     * @param {CData} i Value passed to clk.
-     * @return {*}
-     */
-    void inline set_clk(CData i) {
-        if (module_type == sequential) {
-            __DUT__->clk = i;
-        }
-    }
-
-    /**
-     * @description: Verify clk and toggle clk.
-     * @return {*}
-     */
-    void inline toggle_clk() {
-        if (module_type == sequential) {
-            set_clk(!__DUT__->clk);
-        }
-    }
-
-    /**
-     * @description: sim 1 cycle (clk=0 and clk=1)
-     * @param {int} i # of cycles to sim.
-     * @return {*}
-     */
-    void inline cycles(int i) {
-        for (int j=0; j<i; j++) {
-            toggle_clk();
-            __DUT__->eval();
-            contextp->timeInc(1);
-            m_trace->dump(contextp->time());
-            if (module_type == sequential) {
-                toggle_clk();
-                __DUT__->eval();
-                contextp->timeInc(1);
-                m_trace->dump(contextp->time());
-            }
-        }
     }
 
     /**
@@ -167,16 +138,153 @@ public:
         return rng();
     }
 
+    /**
+     * @description: Check if a and b were equal,
+     *               if so, PASS this check point,
+     *               if not, assert will happed.
+     * @param {uint64_t} a number no.1
+     * @param {uint64_t} b number no.2
+     * @return {*}
+     */
     void inline check_eq(uint64_t a, uint64_t b) {
         if (a != b) {
             m_trace->close();
             delete m_trace;
             delete __DUT__;
             delete contextp;
-            std::cout << "Assertion: a=" << a <<  "b=" << b << std::endl;
+            std::cout << "Assertion at time="
+            << contextp->time() << std::endl;
             assert(0);
+        } else {
+            std::cout << "Check point PASS at time="
+            << contextp->time() << std::endl;
         }
     }
 };
+
+template<class MODULE>
+class TESTBENCH_CLK : public TESTBENCH_BASE<MODULE> {
+public:
+    TESTBENCH_CLK(int argc, char *argv[]) :
+        TESTBENCH_BASE<MODULE>(argc, argv) { }
+
+    /**
+     * @description: Init sim, must called before any sim
+     *               to make sure waveform at time=0 was
+     *               dumped.
+     * @return {*}
+     */
+    virtual void inline sim_init() =0;
+
+    /**
+     * @description: Verify clk and set clk to value i.
+     * @param {CData} i Value passed to clk.
+     * @return {*}
+     */
+    void inline set_clk(CData i) {
+        this->__DUT__->clk = i;
+    }
+
+    /**
+     * @description: Verify clk and toggle clk.
+     * @return {*}
+     */
+    void inline toggle_clk() {
+        set_clk(!this->__DUT__->clk);
+    }
+
+    /**
+     * @description: sim 1 step.
+     * @return {*}
+     */
+    void inline single_step() {
+        toggle_clk();
+        this->__DUT__->eval();
+        this->contextp->timeInc(1);
+        this->m_trace->dump(this->contextp->time());
+    }
+
+    /**
+     * @description: sim i cycles (2 steps per cycle)
+     * @param {int} i # of cycles to sim.
+     * @return {*}
+     */
+    void inline cycles(int i) {
+        for (int j=0; j<i*2; j++) {
+            single_step();
+        }
+    }
+};
+
+// main template of TESTBENCH_TYPE
+// sequential logic with clk & without rst
+template<class MODULE, bool rst_true, bool clk_true>
+class TESTBENCH_TYPE : public TESTBENCH_CLK<MODULE> {
+public:
+    TESTBENCH_TYPE(int argc, char *argv[])
+    : TESTBENCH_CLK<MODULE>(argc, argv){}
+};
+
+template<class MODULE>
+class TESTBENCH_TYPE<MODULE, false, true> : public TESTBENCH_CLK<MODULE> {
+public:
+    TESTBENCH_TYPE(int argc, char *argv[])
+    : TESTBENCH_CLK<MODULE>(argc, argv){}
+
+    /**
+     * @description: Init sim, must called before any sim
+     *               to make sure waveform at time=0 was
+     *               dumped.
+     * @return {*}
+     */
+    void inline sim_init() override {
+        this->__DUT__->eval();
+        this->__DUT__->clk = 1;
+        this->m_trace->dump(this->contextp->time());
+    }
+};
+
+
+// sequential logic with clk & with rst
+template<class MODULE>
+class TESTBENCH_TYPE<MODULE, true, true> : public TESTBENCH_CLK<MODULE> {
+public:
+    TESTBENCH_TYPE(int argc, char *argv[])
+    : TESTBENCH_CLK<MODULE>(argc, argv){}
+
+    /**
+     * @description: Init sim, must called before any sim
+     *               to make sure waveform at time=0 was
+     *               dumped.
+     * @return {*}
+     */
+    void inline sim_init() override {
+        this->__DUT__->rst = 0;
+        this->__DUT__->eval();
+        this->__DUT__->clk = 1;
+        this->m_trace->dump(this->contextp->time());
+    }
+
+    /**
+     * @description: reset sim by setting dut->rst to 1
+     *               (important: dut must contain rst port!)
+     *               Cost 1 sim cycle.
+     * @return {*}
+     */
+    void inline sim_reset() {
+        this->single_step();
+        this_step({ this->__DUT__->rst = 1; });
+        this->single_step();
+        this_step({ this->__DUT__->rst = 0; });
+    }
+};
+
+template<class MODULE>
+class TESTBENCH : public TESTBENCH_TYPE<MODULE, has_rst<MODULE>::value, has_clk<MODULE>::value> {
+public:
+    TESTBENCH(int argc, char *argv[])
+    : TESTBENCH_TYPE<MODULE, has_rst<MODULE>::value, has_clk<MODULE>::value>(argc, argv){};
+};
+
 
 #endif
