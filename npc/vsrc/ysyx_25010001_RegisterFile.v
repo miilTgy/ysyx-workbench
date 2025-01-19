@@ -11,6 +11,5 @@ module ysyx_25010001_RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 64) (
     if (wen) rf[waddr] <= wdata;
   end
 
-  assign rf[0] = 0;
   assign rdata = (|raddr) ? rf[raddr] : 0;
 endmodule
