@@ -4,17 +4,17 @@ module ysyx_25010001_IFU #(
     ) (
         input clk,
         input rst,
-        output [PC_WIDTH-1:0] maddr
+        output [PC_WIDTH-1:0] im_raddr
     );
     wire [PC_WIDTH-1:0] thispc;
-    assign maddr = thispc;
+    assign im_raddr = thispc;
     
     wire [PC_WIDTH-1:0] nextpc;
     assign nextpc = thispc + 64'h4;
 
     ysyx_25010001_Reg #(
         .WIDTH      (64             ),
-        .RESET_VAL  (64'h80000000   )
+        .RESET_VAL  (PC_RESET       )
     ) pc (
         .clk    (clk    ),
         .rst    (rst    ),
