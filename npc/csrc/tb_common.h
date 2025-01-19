@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-01-17 13:53:18
+ * @LastEditTime: 2025-01-20 02:51:23
  * @FilePath: /npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -84,7 +84,7 @@ public:
         module_name += ".vcd";
         std::cout << "traceEverOn" << std::endl;
         m_trace->open(module_name.c_str());
-        std::cout << "Open File" << std::endl;
+        std::cout << "Open Wave File " << module_name << std::endl;
     }
 
     /**
