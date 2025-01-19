@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-01-17 04:12:45
+ * @LastEditTime: 2025-01-17 13:53:18
  * @FilePath: /npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -72,13 +72,12 @@ public:
      */
     TESTBENCH_BASE(int argc, char *argv[]) {
         std::cout << "start constructiog" << std::endl;
-        Verilated::traceEverOn(true);
-        Verilated::commandArgs(argc, argv);
-        __DUT__ = new MODULE;
         contextp = new VerilatedContext;
+        contextp->traceEverOn(true);
+        contextp->commandArgs(argc, argv);
+        __DUT__ = new MODULE;
         m_trace = new VerilatedVcdC;
 
-        contextp->traceEverOn(true);
         __DUT__->trace(m_trace, 5);
         std::string module_name = typeid(MODULE).name();
         std::cout << module_name << std::endl;
@@ -156,6 +155,7 @@ public:
 
     /**
      * @description: Init sim core, dump at time 0.
+     *               Important: Must called before any simulation!
      * @param {function<void()>} codeBlock that you want to exec.
      * @return {*}
      */
