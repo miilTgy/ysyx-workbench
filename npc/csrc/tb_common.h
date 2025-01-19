@@ -145,6 +145,12 @@ public:
         this->contextp->timeInc(1);
         this->m_trace->dump(this->contextp->time());
     }
+
+    void inline init_comb(std::function<void()> codeBlock) {
+        this->__DUT__->eval();
+        codeBlock();
+        this->m_trace->dump(this->contextp->time());
+    }
 };
 
 template<class MODULE>
