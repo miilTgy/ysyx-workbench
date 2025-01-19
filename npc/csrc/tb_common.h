@@ -167,9 +167,7 @@ public:
      */
     void inline init_core(std::function<void()> codeBlock) {
         codeBlock();
-        this->__DUT__->eval();
-        this->__DUT__->clk = 1;
-        this->m_trace->dump(this->contextp->time());
+        this->init_comb([&](){ this->__DUT__->clk = 1; });
     }
 
     /**
