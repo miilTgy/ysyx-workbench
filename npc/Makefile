@@ -25,7 +25,7 @@ sim: $(VERILATOR_TB)
 		-exe --build $(VERILATOR_TB)
 	time $(VERILATOR_EXE) +verilator+rand+reset+1
 
-genc: vsrc/$(PREFIX)$(TOP).v clean
+genc: $(shell find $(abspath ./vsrc) -name "$(PREFIX)$(TOP).v") clean
 	verilator $(VERILATOR_CFLAGS) $(VERILATOR_TOP) $(VSRC)
 
 clean:
