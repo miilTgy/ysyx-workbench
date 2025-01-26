@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-01-20 02:51:23
+ * @LastEditTime: 2025-01-22 23:26:42
  * @FilePath: /npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -148,7 +148,7 @@ public:
 
     void inline init_comb(std::function<void()> codeBlock) {
         this->__DUT__->eval();
-        codeBlock();
+        codeBlock(); // Don't insert codeBlock when comb sim.
         this->m_trace->dump(this->contextp->time());
     }
 };
