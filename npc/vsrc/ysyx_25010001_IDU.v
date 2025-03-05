@@ -3,7 +3,7 @@ module ysyx_25010001_IDU #(
     PC_WIDTH     = 64,
     INST_WIDTH   = 32,
     DATA_WIDTH   = 64,
-    ALU_OP_WIDTH = 4
+    ALUOP_WIDTH = 4
 ) (
     input   [INST_WIDTH - 1 : 0]    inst,
     input   [PC_WIDTH   - 1 : 0]    pc,
@@ -15,7 +15,7 @@ module ysyx_25010001_IDU #(
     output  [DATA_WIDTH - 1 : 0]    imm,
     /* Control outputs */
     output                          alud2slct,
-    output  [ALU_OP_WIDTH-1 : 0]    aluop,
+    output  [ALUOP_WIDTH-1 : 0]    aluop,
     /* DBG outputs */
     output  [OP_WIDTH   - 1 : 0]    opcode_dbg,
     output                          type_I_dbg
@@ -33,34 +33,50 @@ module ysyx_25010001_IDU #(
     wire [OP_WIDTH  - 1  : 0]  opcode_stage1; assign opcode_stage1 = inst[6  : 0];
     wire [FUNCT3_WIDTH-1 : 0]  funct3_stage1; assign funct3_stage1 = inst[14 : 12];
     wire [FUNCT7_WIDTH-1 : 0]  funct7_stage1; assign funct7_stage1 = inst[31 : 25];
-    wire [IMM_I_WIDTH -1 : 0]  immI_stage1  ; assign immI_stage1   = inst[31 : 20];
+
+    wire [DATA_WIDTH -1  : 0]  immI_stage1;
+    wire [DATA_WIDTH -1  : 0]  immU_stage1;
+    wire [DATA_WIDTH -1  : 0]  immS_stage1;
+    wire [DATA_WIDTH -1  : 0]  immB_stage1;
+    wire [DATA_WIDTH -1  : 0]  immJ_stage1;
+
+    assign immI_stage1 = {{52{inst[31]}}, inst[31:20]};
+    assign immU_stage1 = {{32{inst[31]}}, inst[31:12], 12'b0};
+    assign immS_stage1 = {{52{inst[31]}}, inst[31:25], inst[11:7]};
+    assign immB_stage1 = {{52{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0};
+    assign immJ_stage1 = {{44{inst[31]}}, inst[19:12], inst[20], inst[30:21], 1'b0};
 
     /* Define Encoding Type */
-    wire typeI;
-    ysyx_25010001_MuxKeyWithDefault #(4, 5, 1) muxI (
-        typeI, opcode_stage1[OP_WIDTH-1:2], 1'b0, {
-        5'b00000, 1'b1,
-        5'b00100, 1'b1,
-        5'b00110, 1'b1,
-        5'b11001, 1'b1
-    });
+    reg typeI;
+    always @(*) begin
+        case (opcode_stage1[OP_WIDTH-1:2])
+            5'b00000: typeI = 1'b1;
+            5'b00100: typeI = 1'b1;
+            5'b00110: typeI = 1'b1;
+            5'b11001: typeI = 1'b1;
+            default : typeI = 1'b0;
+        endcase        
+    end
 
     /* Immediate Decoder */
-    localparam IMM_I_WIDTH = 12;
+    reg  [DATA_WIDTH - 1 : 0]   imm_stage1;
 
-    wire [DATA_WIDTH     - 1 : 0]   imm_stage1;
-
-    wire [DATA_WIDTH     - 1 : 0]   immI_stage1_sext;
-        ysyx_25010001_Sext immI_sext(immI_stage1, immI_stage1_sext);
-    
-
-    ysyx_25010001_MuxKeyWithDefault #(1, 1, DATA_WIDTH) mux_imm (
-        imm_stage1, 1'b1, {(DATA_WIDTH){1'b0}}, {
-        typeI, immI_stage1_sext
-    });
+    always @(*) begin
+        case (1'b1)
+            typeI  : imm_stage1 = immI_stage1;
+            default: imm_stage1 = {(DATA_WIDTH){1'b0}};
+        endcase
+    end
 
     /* Control signal Generator */
-    
+    /* ALU Control */
+    reg [ALUOP_WIDTH-1:0] aluop_stage1;
+    always @(*) begin
+        casez ({opcode_stage1, funct3_stage1, funct7_stage1})
+            17'b0010011_000_??????? : aluop_stage1 = 4'b0000;
+            default               : aluop_stage1 = 4'b1111;
+        endcase
+    end
 
 // DECODER OUTPUT
     /* Register outputs */
@@ -71,6 +87,7 @@ module ysyx_25010001_IDU #(
     assign imm  = imm_stage1 ;
     /* Control outputs */
     assign alud2slct = typeI;
+    assign aluop     = aluop_stage1;
 
     /* DBG signals */
     assign opcode_dbg = opcode_stage1;
