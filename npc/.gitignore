@@ -13,3 +13,4 @@
 build/
 /obj_dir
 .*
+**/out/**
