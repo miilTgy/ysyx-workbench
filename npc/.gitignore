@@ -8,7 +8,7 @@
 !*.cc
 !*.cpp
 !.gitignore
-!vsrc/chisel/*
+!vsrc/chisel/**
 !README.md
 build/
 /obj_dir
