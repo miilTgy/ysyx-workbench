@@ -1,5 +1,5 @@
 TOP ?= top
-PREFIX = ysyx_25010001_
+PREFIX ?= ysyx_25010001_
 
 BUILD_PATH = obj_dir/
 VERILATOR_CFLAGS += -MMD -O3 --x-assign 1 --x-initial unique -cc --trace -j 16
@@ -9,6 +9,7 @@ VERILATOR_EXE = obj_dir/V$(PREFIX)$(TOP)
 
 CSRC += $(shell find $(abspath ./csrc) -name "*.cpp")
 VSRC += $(shell find $(abspath ./vsrc) -name "*.v")
+VSRC += $(shell find $(abspath ./vsrc) -name "*.sv")
 
 .PHONY: sim genc clean
 
