@@ -25,6 +25,7 @@ object isAddi extends BoolDecodeField[Insn] {
 
 class IDU extends Module {
     val io = IO(new Bundle{
+        val pc     = Input(UInt(64.W))
         val inst   = Input(UInt(32.W))
         val isAddi = Output(Bool())
     })
