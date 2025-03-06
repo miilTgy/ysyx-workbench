@@ -1,5 +1,5 @@
 #include "tb_common.h"
-#include "Vysyx_25010001_IDU.h"
+#include "VIDU.h"
 
 #define CONFIG_MBASE 0x80000000
 
@@ -13,23 +13,23 @@ static const uint32_t img [] = {
 };
 vluint64_t sim_pc = 0x80000000;
 
-TESTBENCH<Vysyx_25010001_IDU> *__TB__;
+TESTBENCH<VIDU> *__TB__;
 
 int main(int argc, char *argv[])
 {
-    __TB__ = new TESTBENCH<Vysyx_25010001_IDU>(argc, argv);
+    __TB__ = new TESTBENCH<VIDU>(argc, argv);
     TB(init_comb([](){ }));
-    TB(step_comb([](){ TB(DUT(pc)) = sim_pc; TB(DUT(inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(pc)) = sim_pc; TB(DUT(inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(pc)) = sim_pc; TB(DUT(inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(pc)) = sim_pc; TB(DUT(inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(pc)) = sim_pc; TB(DUT(inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(pc)) = sim_pc; TB(DUT(inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
     TB(step_comb([](){ }));
 
