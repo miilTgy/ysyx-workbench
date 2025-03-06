@@ -4,8 +4,12 @@ import java.io._
 
 import chisel3._
 import chisel3.util.BitPat
+import chisel3.util.MuxLookup
+import chisel3.util.Cat
+import chisel3.util.Fill
 import chisel3.util.experimental.decode._
 import org.chipsalliance.rvdecoderdb
+import org.chipsalliance.rvdecoderdb.Utils
 
 
 case class Insn(val inst: rvdecoderdb.Instruction) extends DecodePattern {
@@ -23,11 +27,54 @@ object isAddi extends BoolDecodeField[Insn] {
     }
 }
 
+object GenAluOp extends DecodeField[Insn, UInt] {
+    override def name = "gen alu op"
+
+    override def chiselType = UInt(4.W)
+
+    override def default = BitPat("b1111")
+
+    override def genTable(op: Insn): BitPat = op.inst.name match {
+        case "addi" => BitPat("b0000")
+        case _      => BitPat("b1111")
+    }
+}
+
+object ImmTypeEnum extends ChiselEnum {
+    val immNone, immI, immS, immB, immU, immJ = Value
+}
+
+object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
+    override def name = "decode imm type eg. isbuj"
+
+    override def chiselType = ImmTypeEnum()
+    
+    override def genTable(i: Insn): BitPat = {
+        val immType = (if(Utils.isI(i.inst)) {
+            ImmTypeEnum.immI
+        } else if (Utils.isS(i.inst)) {
+            ImmTypeEnum.immS
+        } else if (Utils.isB(i.inst)) {
+            ImmTypeEnum.immB
+        } else if (Utils.isU(i.inst)) {
+            ImmTypeEnum.immU
+        } else if (Utils.isJ(i.inst)) {
+            ImmTypeEnum.immJ
+        } else {
+            ImmTypeEnum.immNone
+        })
+
+        BitPat(immType.litValue.U((immType.getWidth).W))
+    }
+}
+
 class IDU extends Module {
     val io = IO(new Bundle{
         val pc     = Input(UInt(64.W))
         val inst   = Input(UInt(32.W))
         val isAddi = Output(Bool())
+        val aluop  = Output(UInt(4.W))
+        val imm    = Output(UInt(64.W))
     })
 
     val instTable: Iterable[rvdecoderdb.Instruction] =
@@ -54,16 +101,27 @@ class IDU extends Module {
         .toSeq
 
 
-    val decodeTable = new DecodeTable(rv32imInstList, Seq(isAddi))
+    val decodeTable = new DecodeTable(rv32imInstList, Seq(isAddi, GenAluOp, ImmType))
 
     val decodeResult = decodeTable.decode(io.inst)
     io.isAddi := decodeResult(isAddi)
+    io.aluop := decodeResult(GenAluOp)
 
-/*     val imm_i      = Cat(Fill(52, inst(31)), inst(31, 20))                              // I-type
-    val imm_s      = Cat(Fill(52, inst(31)), inst(31, 25), inst(11, 7))                 // S-type
-    val imm_b      = Cat(Fill(52, inst(31)), inst(7), inst(30, 25), inst(11, 8), 0.U)   // B-type
-    val imm_u      = Cat(Fill(32, inst(31)), inst(31, 12), Fill(12, 0.U))               // U-type
-    val imm_j      = Cat(Fill(44, inst(31)), inst(19, 12), inst(20), inst(30, 21), 0.U) // J-type
-    val imm_shamtd = Cat(Fill(58, 0.U), inst(25, 20))
-    val imm_shamtw = Cat(Fill(59, 0.U), inst(24, 20))
- */}
+    suppressEnumCastWarning { // THIS IS VITAL
+    val imm_i      = Cat(Fill(52, io.inst(31)), io.inst(31, 20))                                    // I-type
+    val imm_s      = Cat(Fill(52, io.inst(31)), io.inst(31, 25), io.inst(11, 7))                    // S-type
+    val imm_b      = Cat(Fill(52, io.inst(31)), io.inst(7), io.inst(30, 25), io.inst(11, 8), 0.U)   // B-type
+    val imm_u      = Cat(Fill(32, io.inst(31)), io.inst(31, 12), Fill(12, 0.U))                     // U-type
+    val imm_j      = Cat(Fill(44, io.inst(31)), io.inst(19, 12), io.inst(20), io.inst(30, 21), 0.U) // J-type
+    val imm_type = decodeResult(ImmType)
+    io.imm := MuxLookup(imm_type, 0.U)(
+        Seq(
+            ImmTypeEnum.immI    -> imm_i,
+            ImmTypeEnum.immS    -> imm_s,
+            ImmTypeEnum.immB    -> imm_b,
+            ImmTypeEnum.immU    -> imm_u,
+            ImmTypeEnum.immJ    -> imm_j
+    ))
+
+    }
+}
