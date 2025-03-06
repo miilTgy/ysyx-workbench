@@ -1,6 +1,6 @@
 package idu
 
-import java.io.PrintWriter
+import java.io._
 
 import chisel3._
 import chisel3.util.BitPat
@@ -34,21 +34,24 @@ class IDU extends Module {
             
 
     val targetSets = Set("rv_i", "rv64_i", "rv_m", "rv64_m")
-    val instTableOutputFile = new PrintWriter("instTable.txt")
-/*     instTableOutputFile.println(
-        instTable
-        .filter(instr => targetSets.contains(instr.instructionSet.name))
-        .filter(_.pseudoFrom.isEmpty)
-        .toString()
-    )
- */
+
+    /* OutPut Inst Table Begin */
+        val instTableOutputFile = new File("InstSupported.md")
+        val rv32imInstListString = instTable
+            .filter(instr => targetSets.contains(instr.instructionSet.name)) // filter Sets
+            .filter(_.pseudoFrom.isEmpty)
+
+        val writer = new BufferedWriter(new FileWriter(instTableOutputFile))
+        writer.write(rv32imInstListString.toString())
+        writer.close()
+    /* OutPut Inst Table End */
+
     val rv32imInstList = instTable
         .filter(instr => targetSets.contains(instr.instructionSet.name)) // filter Sets
         .filter(_.pseudoFrom.isEmpty)
         .map(Insn(_))
         .toSeq
 
-    /* instTableOutputFile. */println(rv32imInstList)
 
     val decodeTable = new DecodeTable(rv32imInstList, Seq(isAddi))
 
