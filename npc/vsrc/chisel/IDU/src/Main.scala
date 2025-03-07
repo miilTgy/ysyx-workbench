@@ -16,6 +16,7 @@ object Main extends App {
     }
     println()
     println(
-    circt.stage.ChiselStage.emitSystemVerilogFile(new IDU(), args, firtoolOptions)
+      circt.stage.ChiselStage
+        .emitSystemVerilogFile(new IDU(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
     )
 }
