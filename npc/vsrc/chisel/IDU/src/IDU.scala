@@ -63,6 +63,16 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
         } else {
             ImmTypeEnum.immNone
         })
+    // method isJ is not a case class, nor does it have a valid unapply/unapplySeq member
+    // override def genTable(i: Insn): BitPat = {
+    //     val immType = True match {
+    //         case Utils.isI(i.inst)  => ImmTypeEnum.immI
+    //         case Utils.isS(i.inst)  => ImmTypeEnum.immS
+    //         case Utils.isB(i.inst)  => ImmTypeEnum.immB
+    //         case Utils.isU(i.inst)  => ImmTypeEnum.immU
+    //         case Utils.isJ(i.inst)  => ImmTypeEnum.immJ
+    //         case _                  => ImmTypeEnum.immNone
+    //     }
         
         /* println("BITPAT: " + immType.litValue.U) */
         BitPat(immType.litValue.U((immType.getWidth).W))
