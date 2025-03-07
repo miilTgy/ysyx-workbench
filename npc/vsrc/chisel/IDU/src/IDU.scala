@@ -63,7 +63,8 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
         } else {
             ImmTypeEnum.immNone
         })
-
+        
+        /* println("BITPAT: " + immType.litValue.U) */
         BitPat(immType.litValue.U((immType.getWidth).W))
     }
 }
@@ -107,7 +108,6 @@ class IDU extends Module {
     io.isAddi := decodeResult(isAddi)
     io.aluop := decodeResult(GenAluOp)
 
-    suppressEnumCastWarning { // THIS IS VITAL
     val imm_i      = Cat(Fill(52, io.inst(31)), io.inst(31, 20))                                    // I-type
     val imm_s      = Cat(Fill(52, io.inst(31)), io.inst(31, 25), io.inst(11, 7))                    // S-type
     val imm_b      = Cat(Fill(52, io.inst(31)), io.inst(7), io.inst(30, 25), io.inst(11, 8), 0.U)   // B-type
@@ -122,6 +122,4 @@ class IDU extends Module {
             ImmTypeEnum.immU    -> imm_u,
             ImmTypeEnum.immJ    -> imm_j
     ))
-
-    }
 }
