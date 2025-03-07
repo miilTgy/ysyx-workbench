@@ -10,6 +10,11 @@ object Main extends App {
       "locationInfoStyle=wrapInAtSquareBracket"
     ).reduce(_ + "," + _)
     )
+    print("args: ")
+    for (i <- args) {
+      print(i + " ")
+    }
+    println()
     println(
     circt.stage.ChiselStage.emitSystemVerilogFile(new IDU(), args, firtoolOptions)
     )
