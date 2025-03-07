@@ -95,7 +95,7 @@ class IDU extends Module {
     val targetSets = Set("rv_i", "rv64_i", "rv_m", "rv64_m")
 
     /* OutPut Inst Table Begin */
-        val instTableOutputFile = new File("InstSupported.md")
+        val instTableOutputFile = new File("vsrc/chisel/InstSupported.md")
         val rv32imInstListString = instTable
             .filter(instr => targetSets.contains(instr.instructionSet.name)) // filter Sets
             .filter(_.pseudoFrom.isEmpty)
