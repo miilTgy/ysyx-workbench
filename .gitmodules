@@ -1,0 +1,3 @@
+[submodule "npc/vsrc/chisel/rvdecoderdb"]
+	path = npc/vsrc/chisel/rvdecoderdb
+	url = https://github.com/chipsalliance/rvdecoderdb
