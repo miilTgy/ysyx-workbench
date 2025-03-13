@@ -8,7 +8,7 @@
 !*.cc
 !*.cpp
 !.gitignore
-!vsrc/chisel/**.scala
+!vsrc/**/**.scala
 !README.md
 !**.md
 build/
