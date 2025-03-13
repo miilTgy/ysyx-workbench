@@ -45,3 +45,4 @@ trait chiselModule extends ScalaModule with ScalafmtModule { m =>
 }
 
 object IDU extends chiselModule {}
+object ALU extends chiselModule {}
