@@ -99,6 +99,7 @@ class IDU extends Module {
         val rv32imInstListString = instTable
             .filter(instr => targetSets.contains(instr.instructionSet.name)) // filter Sets
             .filter(_.pseudoFrom.isEmpty)
+            // .filter(instr => instr.args.exists(_.name.contains("imm")))
 
         val writer = new BufferedWriter(new FileWriter(instTableOutputFile))
         writer.write(rv32imInstListString.toString())
