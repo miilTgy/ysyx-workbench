@@ -21,4 +21,7 @@
 word_t expr(char *e, bool *success);
 void scan_all_wp(bool *stop);
 
+void push_iringbuf(vaddr_t pc, uint32_t inst, char *ilogbuf);
+void display_iringbuf();
+
 #endif

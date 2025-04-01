@@ -38,8 +38,9 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
 #endif
-  if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
+  if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); } // [x] here outputs the instruction
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+  IFDEF(CONFIG_ITRACE, push_iringbuf(_this->pc, _this->isa.inst.val, _this->logbuf));
 
 #ifdef CONFIG_WATCHPOINT
   /* TODO: check watchpoint triggered */
@@ -104,6 +105,10 @@ static void statistic() {
 
 void assert_fail_msg() {
   isa_reg_display();
+#ifdef CONFIG_ITRACE
+  printf("itrace:\n");
+  display_iringbuf();
+#endif
   statistic();
 }
 

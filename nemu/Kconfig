@@ -150,6 +150,11 @@ config ITRACE
   bool "Enable instruction tracer"
   default y
 
+config ITRACE_BUF_LEN
+  depends on ITRACE
+  int "Buffer length (unit: number of instructions)"
+  default 32
+
 config ITRACE_COND
   depends on ITRACE
   string "Only trace instructions when the condition is true"
