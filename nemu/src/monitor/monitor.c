@@ -13,8 +13,10 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
+#include <elf.h>
 #include <isa.h>
 #include <memory/paddr.h>
+#include "sdb/sdb.h"
 
 void init_rand();
 void init_log(const char *log_file);
@@ -44,6 +46,7 @@ void sdb_set_batch_mode();
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
+static char elf_file[256];
 static int difftest_port = 1234;
 
 static long load_img() {
@@ -66,6 +69,85 @@ static long load_img() {
 
   fclose(fp);
   return size;
+}
+
+static void load_elf() {
+  if (img_file == NULL) {
+    Log("No elf is given.");
+    return;
+  }
+  char elf_tmp[256];
+  strcpy(elf_tmp, img_file);
+  char *suffix = strrchr(elf_tmp, '.');
+  if (suffix != NULL) {
+    strcpy(suffix, ".elf");
+    strcpy(elf_file, elf_tmp);
+    Log("Loading ELF file: %s", elf_file);
+    FILE *fp = fopen(elf_file, "rb");
+    Assert(fp, "Can not open ELF file '%s'", elf_file);
+
+    // 1. Read ELF header
+    Elf64_Ehdr ehdr;
+    if (fread(&ehdr, sizeof(Elf64_Ehdr), 1, fp) == 0){
+      fclose(fp);
+      panic("Can not read ELF header from '%s'", elf_file);
+    }
+
+    // 2. Check if it is a valid ELF file
+    if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0) {
+      fclose(fp);
+      Assert(0, "Not a valid ELF file '%s'", elf_file);
+    }
+
+    // 3. Locate to Section header
+    fseek(fp, ehdr.e_shoff, SEEK_SET);
+
+    // 4. Read Section header
+    Elf64_Shdr *shdr_table = (Elf64_Shdr *) malloc (ehdr.e_shnum * ehdr.e_shentsize);
+    Assert(shdr_table, "Can not allocate memory for section header table");
+    if (fread(shdr_table, ehdr.e_shentsize, ehdr.e_shnum, fp) == 0) {
+      fclose(fp);
+      panic("Can not read section header from '%s'", elf_file);
+    }
+
+    // 5. Find .symtab section and .strtab section
+    size_t symtab_idx=0, strtab_idx=0;
+    for(size_t i=0; i<ehdr.e_shnum; i++) {
+      if (shdr_table[i].sh_type == SHT_SYMTAB) {
+        symtab_idx = i;
+        strtab_idx = shdr_table[i].sh_link;
+      }
+    }
+    
+    // 6. Locate to .strtab head
+    fseek(fp, shdr_table[strtab_idx].sh_offset, SEEK_SET);
+
+    // 7. Read .strtab section
+    void *strtab = malloc(shdr_table[strtab_idx].sh_size);
+    Assert(strtab, "Can not allocate memory for .strtab section");
+    if (fread(strtab, shdr_table[strtab_idx].sh_size, 1, fp) == 0) {
+      fclose(fp);
+      panic("Can not read .strtab section from '%s'", elf_file);
+    }
+    
+    // 8. Locate to .symtab head
+    fseek(fp, shdr_table[symtab_idx].sh_offset, SEEK_SET);
+
+    // 9. Read .symtab section
+    Elf64_Sym *symtab = (Elf64_Sym *) malloc (shdr_table[symtab_idx].sh_size);
+    Assert(symtab, "Can not allocate memory for .symtab section");
+    if (fread(symtab, shdr_table[symtab_idx].sh_size, 1, fp) == 0) {
+      fclose(fp);
+      panic("Can not read .symtab section from '%s'", elf_file);
+    }
+    for (size_t i=0; i<shdr_table[symtab_idx].sh_size/sizeof(Elf64_Sym); i++) {
+      if(ELF64_ST_TYPE(symtab[i].st_info) == STT_FUNC && symtab[i].st_size != 0) {
+        fnode_pushback(symtab[i].st_value, symtab[i].st_size, (char *) ((uint64_t) strtab + symtab[i].st_name));
+      }
+    }
+    display_all_f();
+  }
+
 }
 
 static int parse_args(int argc, char *argv[]) {
@@ -125,6 +207,9 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
+
+  /* Load the ELF file. */
+  load_elf();
 
   /* Initialize differential testing. */
   init_difftest(diff_so_file, img_size, difftest_port);
