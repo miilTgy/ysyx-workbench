@@ -11,7 +11,6 @@ int printf(const char *fmt, ...) {
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
-  panic("Not implemented");
   char *d = out, *s = (char *) fmt;
   for (; *s != '\0'; s++) {
     if (*s != '%') {
