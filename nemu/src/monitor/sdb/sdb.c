@@ -154,6 +154,11 @@ static int cmd_d(char *args) {
   
 }
 
+static int cmd_itrace(char *args) {
+  display_iringbuf();
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -169,7 +174,8 @@ static struct {
   { "x", "x N EXPR, Scan memory, N is No. of address, EXPR is starting address", cmd_x},
   { "p", "p EXPR, Calculate the value of EXPR", cmd_p},
   { "w", "w EXPR, Set watchpoint", cmd_w},
-  { "d", "d NO , Delete watchpoint NO", cmd_d}
+  { "d", "d NO , Delete watchpoint NO", cmd_d},
+  { "itrace", "itrace, Display the instruction trace", cmd_itrace}
   /* TODO: Add more commands */
 
 };
