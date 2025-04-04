@@ -24,4 +24,8 @@ void scan_all_wp(bool *stop);
 void push_iringbuf(vaddr_t pc, uint32_t inst, char *ilogbuf);
 void display_iringbuf();
 
+void fnode_pushback(vaddr_t addr, size_t size, char *fname);
+void call_or_ret(vaddr_t pc, vaddr_t dnpc, bool ret_possible, int rd);
+void display_all_f();
+
 #endif
