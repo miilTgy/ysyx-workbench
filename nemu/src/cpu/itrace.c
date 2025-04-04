@@ -25,7 +25,10 @@ void push_iringbuf(vaddr_t pc, uint32_t inst, char *ilogbuf) {
 
 void display_iringbuf() {
     for (int i = 0; i < CONFIG_ITRACE_BUF_LEN; i++) {
-        printf("INST.%d:\t%s\n", i - CONFIG_ITRACE_BUF_LEN + 1, iringbuf[(i + iringbuf_ptr) % CONFIG_ITRACE_BUF_LEN].ilogbuf);
+        struct inode node = iringbuf[(i + iringbuf_ptr) % CONFIG_ITRACE_BUF_LEN];
+        if (node.pc != 0) {
+            printf("INST.%d, pc=0x%lx:\t%s\n", i - CONFIG_ITRACE_BUF_LEN + 1, node.pc, node.ilogbuf);
+        }
     }
 }
 
