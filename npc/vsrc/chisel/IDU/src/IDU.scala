@@ -18,17 +18,6 @@ case class Insn(val inst: rvdecoderdb.Instruction) extends DecodePattern {
     override def bitPat: BitPat = BitPat("b" + inst.encoding.toString())
 }
 
-object isAddi extends BoolDecodeField[Insn] {
-    override def name = "is addi"
-
-    override def default = BitPat(false.B)
-
-    override def genTable(i: Insn): BitPat = i.inst.name match {
-        case "addi" => BitPat(true.B)
-        case _      => BitPat(false.B)
-    }
-}
-
 object aluD2slct extends BoolDecodeField[Insn] {
     override def name = "src2 or imm select mux ctrl"
 
@@ -83,7 +72,6 @@ class IDU extends Module {
     val io = IO(new Bundle{
         val pc        = Input(UInt(64.W))
         val inst      = Input(UInt(32.W))
-        val isAddi    = Output(Bool())
         val alud2slct = Output(Bool())
         val aluop     = Output(UInt(4.W))
         val imm       = Output(UInt(64.W))
@@ -114,10 +102,9 @@ class IDU extends Module {
         .toSeq
 
 
-    val decodeTable = new DecodeTable(rv32imInstList, Seq(isAddi, aluD2slct, GenAluOp, ImmType))
+    val decodeTable = new DecodeTable(rv32imInstList, Seq(aluD2slct, GenAluOp, ImmType))
 
     val decodeResult = decodeTable.decode(io.inst)
-    io.isAddi := decodeResult(isAddi)
     io.alud2slct := decodeResult(aluD2slct)
     io.aluop := decodeResult(GenAluOp)
 
