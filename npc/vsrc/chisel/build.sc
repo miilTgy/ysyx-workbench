@@ -1,3 +1,4 @@
+import os.copy.over
 // import Mill dependency
 import mill._
 import mill.define.Sources
@@ -44,5 +45,10 @@ trait chiselModule extends ScalaModule with ScalafmtModule { m =>
   }
 }
 
-object IDU extends chiselModule {}
-object ALU extends chiselModule {}
+object aluop extends chiselModule {}
+object IDU extends chiselModule {
+  override def moduleDeps = Seq(aluop)
+}
+object ALU extends chiselModule {
+  override def moduleDeps = Seq(aluop)
+}
