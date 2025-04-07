@@ -1,6 +1,6 @@
 #include "tb_common.h"
-#include "Vysyx_25010001_MEM.h"
-#include "Vysyx_25010001_MEM__Dpi.h"
+#include "VIMEM_d.h"
+#include "VIMEM_d__Dpi.h"
 
 // Create memory
 #define PG_ALIGN __attribute((aligned(4096)))
@@ -18,7 +18,7 @@ static inline uint64_t host_read(void *addr, int len) {
 }
 
 // Instance common TB
-TESTBENCH<Vysyx_25010001_MEM> *__TB__;
+TESTBENCH<VIMEM_d> *__TB__;
 
 // Definition of paddr_rear from DPI-C
 extern "C" int paddr_read(unsigned long long paddr) {
@@ -43,16 +43,16 @@ void init_pmem() {
 }
 
 int main(int argc, char *argv[]) {
-    __TB__ = new TESTBENCH<Vysyx_25010001_MEM>(argc, argv);
+    __TB__ = new TESTBENCH<VIMEM_d>(argc, argv);
 
     init_pmem();
     std::cout << std::hex << *(uint32_t *) guest_to_host(0x80000000) << std::dec << std::endl;
-    TB(DUT(im_raddr) = 0x80000000); TB(init_comb([](){}));
+    TB(DUT(io_im_raddr) = 0x80000000); TB(init_comb([](){}));
     for (int i = 0; i < 5; i++) {
         TB(step_comb([&](){
-            TB(DUT(im_raddr) = 0x80000000 + i * 4);
+            TB(DUT(io_im_raddr) = 0x80000000 + i * 4);
         }));
-        TB(check_eq(*(uint32_t *)guest_to_host(TB(DUT(im_raddr))), TB(DUT(inst_data))));
+        TB(check_eq(*(uint32_t *)guest_to_host(TB(DUT(io_im_raddr))), TB(DUT(io_inst_data))));
     }
     TB(step_comb([](){}));
 
