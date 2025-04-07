@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-01-22 23:26:42
+ * @LastEditTime: 2025-04-07 14:34:47
  * @FilePath: /npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -39,7 +39,7 @@ template<class, class U = void>
 struct has_rst : std::false_type { };
 
 template<class T>
-struct has_rst<T, std::__void_t<decltype(T::rst)>> : std::true_type { };
+struct has_rst<T, std::__void_t<decltype(T::reset)>> : std::true_type { };
 
 
 // Check if has clk port
@@ -47,7 +47,7 @@ template<class, class U = void>
 struct has_clk : std::false_type { };
 
 template<class T>
-struct has_clk<T, std::__void_t<decltype(T::clk)>> : std::true_type { };
+struct has_clk<T, std::__void_t<decltype(T::clock)>> : std::true_type { };
 
 
 
@@ -167,7 +167,7 @@ public:
      */
     void inline init_core(std::function<void()> codeBlock) {
         codeBlock();
-        this->init_comb([&](){ this->__DUT__->clk = 1; });
+        this->init_comb([&](){ this->__DUT__->clock = 1; });
     }
 
     /**
@@ -176,7 +176,7 @@ public:
      * @return {*}
      */
     void inline set_clk(CData i) {
-        this->__DUT__->clk = i;
+        this->__DUT__->clock = i;
     }
 
     /**
@@ -184,7 +184,7 @@ public:
      * @return {*}
      */
     void inline toggle_clk() {
-        set_clk(!this->__DUT__->clk);
+        set_clk(!this->__DUT__->clock);
     }
 
     /**
@@ -264,7 +264,7 @@ public:
      * @return {*}
      */
     void inline sim_init() {
-        this->init_core([this](){ this->__DUT__->rst = 0; });
+        this->init_core([this](){ this->__DUT__->reset = 0; });
     }
 
     /**
@@ -274,8 +274,8 @@ public:
      * @return {*}
      */
     void inline sim_reset() {
-        this->cycles([this](){ this->__DUT__->rst = 1; });
-        this->cycles([this](){ this->__DUT__->rst = 0; });
+        this->cycles([this](){ this->__DUT__->reset = 1; });
+        this->cycles([this](){ this->__DUT__->reset = 0; });
     }
 };
 
