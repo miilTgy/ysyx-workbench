@@ -8,7 +8,7 @@ VERILATOR_TOP = --top-module $(PREFIX)$(TOP)
 VERILATOR_EXE = obj_dir/V$(PREFIX)$(TOP)
 
 CSRC += $(shell find $(abspath ./csrc) -name "*.cpp")
-VSRC += $(shell find $(abspath ./vsrc) -name "*.v")
+VSRC += $(filter-out $(abspath ./vsrc/chisel)/%.v, $(shell find $(abspath ./vsrc) -name "*.v"))
 VSRC += $(shell find $(abspath ./vsrc) -name "*.sv")
 
 .PHONY: sim genc clean
