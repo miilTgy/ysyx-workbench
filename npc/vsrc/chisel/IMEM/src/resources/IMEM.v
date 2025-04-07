@@ -1,4 +1,4 @@
-module ysyx_25010001_MEM #(
+module IMEM #(
     ADDR_WIDTH = 64,
     INST_WIDTH = 32
 ) (
