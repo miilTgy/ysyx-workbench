@@ -11,6 +11,8 @@ import chisel3.util.experimental.decode._
 import org.chipsalliance.rvdecoderdb
 import org.chipsalliance.rvdecoderdb.Utils
 
+import aluop._
+
 
 case class Insn(val inst: rvdecoderdb.Instruction) extends DecodePattern {
     override def bitPat: BitPat = BitPat("b" + inst.encoding.toString())
@@ -47,9 +49,9 @@ object GenAluOp extends DecodeField[Insn, UInt] {
 
     override def default = BitPat("b1111")
 
-    override def genTable(op: Insn): BitPat = op.inst.name match {
-        case "addi" => BitPat("b0000")
-        case _      => BitPat("b1111")
+    override def genTable(op: Insn): BitPat = {
+        val aluOp = aluop.AluOpMap.getAluOp(op.inst.name)
+        BitPat(aluOp.litValue.U((aluOp.getWidth).W))
     }
 }
 
