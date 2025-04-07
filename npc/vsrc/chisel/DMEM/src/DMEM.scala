@@ -12,7 +12,7 @@ class DMEMIO extends Bundle {
 }
 
 class DMEM extends BlackBox with HasBlackBoxPath {
-    val io = IO(new Bundle {new DMEMIO})
+    val io = IO(new DMEMIO)
 
     // Set the resource path for the Verilog file
     // addResource("/DMEM.v")
@@ -20,8 +20,8 @@ class DMEM extends BlackBox with HasBlackBoxPath {
 }
 
 class DMEM_d extends Module {
-    val io = IO(new Bundle {new DMEMIO})
-    
+    val io = IO(new DMEMIO)
+
     val dmem = Module(new DMEM())
     dmem.io <> io
 }
