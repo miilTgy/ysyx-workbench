@@ -2,7 +2,7 @@ module IMEM #(
     ADDR_WIDTH = 64,
     INST_WIDTH = 32
 ) (
-    input   [ADDR_WIDTH-1:0]    im_raddr,
+    input   [ADDR_WIDTH-1:0]    pc,
     output  [INST_WIDTH-1:0]    inst_data
     
 );
