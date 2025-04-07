@@ -65,29 +65,14 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
     override def chiselType = ImmTypeEnum()
     
     override def genTable(i: Insn): BitPat = {
-        val immType = (if(Utils.isI(i.inst)) {
-            ImmTypeEnum.immI
-        } else if (Utils.isS(i.inst)) {
-            ImmTypeEnum.immS
-        } else if (Utils.isB(i.inst)) {
-            ImmTypeEnum.immB
-        } else if (Utils.isU(i.inst)) {
-            ImmTypeEnum.immU
-        } else if (Utils.isJ(i.inst)) {
-            ImmTypeEnum.immJ
-        } else {
-            ImmTypeEnum.immNone
-        })
-    // method isJ is not a case class, nor does it have a valid unapply/unapplySeq member
-    // override def genTable(i: Insn): BitPat = {
-    //     val immType = True match {
-    //         case Utils.isI(i.inst)  => ImmTypeEnum.immI
-    //         case Utils.isS(i.inst)  => ImmTypeEnum.immS
-    //         case Utils.isB(i.inst)  => ImmTypeEnum.immB
-    //         case Utils.isU(i.inst)  => ImmTypeEnum.immU
-    //         case Utils.isJ(i.inst)  => ImmTypeEnum.immJ
-    //         case _                  => ImmTypeEnum.immNone
-    //     }
+        val immType = i match {
+            case m if Utils.isI(m.inst)  => ImmTypeEnum.immI
+            case m if Utils.isS(m.inst)  => ImmTypeEnum.immS
+            case m if Utils.isB(m.inst)  => ImmTypeEnum.immB
+            case m if Utils.isU(m.inst)  => ImmTypeEnum.immU
+            case m if Utils.isJ(m.inst)  => ImmTypeEnum.immJ
+            case _                  => ImmTypeEnum.immNone
+        }
         
         /* println("BITPAT: " + immType.litValue.U) */
         BitPat(immType.litValue.U((immType.getWidth).W))
