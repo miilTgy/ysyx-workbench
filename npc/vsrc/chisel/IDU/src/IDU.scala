@@ -29,12 +29,12 @@ object isAddi extends BoolDecodeField[Insn] {
     }
 }
 
-object aluD2slct extends  BoolDecodeField[Insn] {
+object aluD2slct extends BoolDecodeField[Insn] {
     override def name = "src2 or imm select mux ctrl"
 
     override def default: BitPat = BitPat(false.B)
     override def genTable(i: Insn): BitPat = {
-        if (i.inst.args.exists(_.name.contains("imm"))) {
+        if (Utils.readRs2(i.inst)) {
             BitPat(true.B)
         } else {
             BitPat(false.B)
