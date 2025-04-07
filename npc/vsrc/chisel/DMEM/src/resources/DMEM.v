@@ -2,10 +2,10 @@ module DMEM #(
     ADDR_WIDTH = 64,
     INST_WIDTH = 32
 ) (
-    input   [ADDR_WIDTH-1:0]    im_raddr,
-    output  [INST_WIDTH-1:0]    inst_data
+    input   [ADDR_WIDTH-1:0]    dm_raddr,
+    output  [INST_WIDTH-1:0]    data
     
 );
     import "DPI-C" function int paddr_read(input longint unsigned paddr);
-    assign inst_data = paddr_read(im_raddr);
+    assign data = paddr_read(dm_raddr);
 endmodule
