@@ -31,6 +31,26 @@ object aluD2slct extends BoolDecodeField[Insn] {
     }
 }
 
+
+object memPasslct extends BoolDecodeField[Insn] {
+    override def name = "dmem pass select mux ctrl"
+
+    override def default: BitPat = BitPat(false.B)
+
+    val memInst: Seq[String] = Seq(
+        "lb", "lh", "lw", "ld",
+        "lbu", "lhu", "lwu",
+        "sb", "sh", "sw", "sd"
+    )
+    override def genTable(i: Insn): BitPat = {
+        if (memInst.contains(i.inst.name)) {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
 object GenAluOp extends DecodeField[Insn, UInt] {
     override def name = "gen alu op"
 
@@ -73,6 +93,7 @@ class IDU extends Module {
         val pc        = Input(UInt(64.W))
         val inst      = Input(UInt(32.W))
         val alud2slct = Output(Bool())
+        val mpasslct  = Output(Bool())
         val aluop     = Output(UInt(4.W))
         val imm       = Output(UInt(64.W))
     })
@@ -102,10 +123,11 @@ class IDU extends Module {
         .toSeq
 
 
-    val decodeTable = new DecodeTable(rv32imInstList, Seq(aluD2slct, GenAluOp, ImmType))
+    val decodeTable = new DecodeTable(rv32imInstList, Seq(aluD2slct, memPasslct, GenAluOp, ImmType))
 
     val decodeResult = decodeTable.decode(io.inst)
     io.alud2slct := decodeResult(aluD2slct)
+    io.mpasslct  := decodeResult(memPasslct)
     io.aluop := decodeResult(GenAluOp)
 
     val imm_i      = Cat(Fill(52, io.inst(31)), io.inst(31, 20))                                    // I-type
