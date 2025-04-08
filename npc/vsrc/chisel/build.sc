@@ -45,6 +45,9 @@ trait chiselModule extends ScalaModule with ScalafmtModule { m =>
   }
 }
 
+object GPR extends chiselModule {
+  override def moduleDeps = Seq(IDU)
+}
 object IFU extends chiselModule {}
 object IMEM extends chiselModule {}
 object aluop extends chiselModule {}
