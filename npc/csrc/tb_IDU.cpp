@@ -20,17 +20,17 @@ int main(int argc, char *argv[])
 {
     __TB__ = new TESTBENCH<VIDU>(argc, argv);
     TB(init_comb([](){ }));
-    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(io_pc)) = sim_pc; TB(DUT(io_inst)) = img[sim_pc - CONFIG_MBASE]; }));
+    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
     sim_pc += 1;
     TB(step_comb([](){ }));
 
