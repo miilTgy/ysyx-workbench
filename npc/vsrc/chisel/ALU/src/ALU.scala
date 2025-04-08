@@ -6,34 +6,35 @@ import chisel3.util.MuxLookup
 import aluop._
 
 class ALU extends Module {
-    val ioIDU = IO(new Bundle{
-        val pc = Input(UInt(64.W))
+    val IDUio = IO(new Bundle{
         val aluop = Input(UInt(4.W))
+    })
+    val GPRio = IO(new Bundle{
         val data1 = Input(UInt(64.W))
+    })
+    val MUXio = IO(new Bundle{
         val data2 = Input(UInt(64.W))
     })
-
     val ioMEMWB = IO(new Bundle{
-        val pc = Output(UInt(64.W))
-        val result = Output(UInt(64.W))
+        val res_addr = Output(UInt(64.W))
     })
 
-    val addRes = ioIDU.data1 + ioIDU.data2
-    val subRes = ioIDU.data1 - ioIDU.data2
-    val xorRes = ioIDU.data1 ^ ioIDU.data2
-    val orRes  = ioIDU.data1 | ioIDU.data2
-    val andRes = ioIDU.data1 & ioIDU.data2
-    val sllRes = ioIDU.data1 << ioIDU.data2(5,0)
-    val srlRes = ioIDU.data1 >> ioIDU.data2(5,0)
-    val sraRes = (ioIDU.data1.asSInt >> ioIDU.data2(5,0)).asUInt
-    val mulRes = /* ioIDU.data1 * ioIDU.data2 */ 0.U
-    val divRes = /* ioIDU.data1 / ioIDU.data2 */ 0.U
-    val remRes = /* ioIDU.data1 % ioIDU.data2 */ 0.U
+    val addRes = GPRio.data1 + MUXio.data2
+    val subRes = GPRio.data1 - MUXio.data2
+    val xorRes = GPRio.data1 ^ MUXio.data2
+    val orRes  = GPRio.data1 | MUXio.data2
+    val andRes = GPRio.data1 & MUXio.data2
+    val sllRes = GPRio.data1 << MUXio.data2(5,0)
+    val srlRes = GPRio.data1 >> MUXio.data2(5,0)
+    val sraRes = (GPRio.data1.asSInt >> MUXio.data2(5,0)).asUInt
+    val mulRes = /* IDUio.data1 * IDUio.data2 */ 0.U
+    val divRes = /* IDUio.data1 / IDUio.data2 */ 0.U
+    val remRes = /* IDUio.data1 % IDUio.data2 */ 0.U
 
-    val (aluopDecoded: aluop.AluOp.Type, valid: Bool) = aluop.AluOp.safe(ioIDU.aluop)
+    val (aluopDecoded: aluop.AluOp.Type, valid: Bool) = aluop.AluOp.safe(IDUio.aluop)
     assert(valid, "ALU.scala: aluop decode result may be invalid");
 
-    ioMEMWB.result := MuxLookup(aluopDecoded, 0.U)(
+    ioMEMWB.res_addr := MuxLookup(aluopDecoded, 0.U)(
         Seq(
             AluOp.ADD -> addRes,
             AluOp.SUB -> subRes,
@@ -47,6 +48,4 @@ class ALU extends Module {
             AluOp.DIV -> divRes,
             AluOp.REM -> remRes
     ))
-
-    ioMEMWB.pc := ioIDU.pc
 }
