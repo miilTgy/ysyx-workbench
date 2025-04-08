@@ -3,9 +3,7 @@ package imem
 import chisel3._
 import chisel3.util.HasBlackBoxPath
 
-class IFUIO extends Bundle {
-    val pc = Input(UInt(64.W))
-}
+import ifu.IOIMEM
 
 class IOIDU extends Bundle {
     val pc = Output(UInt(64.W))
@@ -23,7 +21,7 @@ class IMEM extends BlackBox with HasBlackBoxPath {
 }
 
 class IMEM_d extends Module {
-    val IFUio = IO(new IFUIO)
+    val IFUio = IO(Flipped(new ifu.IOIMEM))
     val ioIDU = IO(new IOIDU)
 
     ioIDU.pc := IFUio.pc

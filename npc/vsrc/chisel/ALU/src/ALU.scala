@@ -4,20 +4,21 @@ import chisel3._
 import chisel3.util.MuxLookup
 
 import aluop._
+import idu.IOALU
+
+class IODMEMUX extends Bundle {
+    val res_addr = Output(UInt(64.W))
+}
 
 class ALU extends Module {
-    val IDUio = IO(new Bundle{
-        val aluop = Input(UInt(4.W))
-    })
+    val IDUio = IO(Flipped(new IOALU))
     val GPRio = IO(new Bundle{
         val data1 = Input(UInt(64.W))
     })
     val MUXio = IO(new Bundle{
         val data2 = Input(UInt(64.W))
     })
-    val ioMEMWB = IO(new Bundle{
-        val res_addr = Output(UInt(64.W))
-    })
+    val ioDMEMUX = IO(new IODMEMUX)
 
     val addRes = GPRio.data1 + MUXio.data2
     val subRes = GPRio.data1 - MUXio.data2
@@ -34,7 +35,7 @@ class ALU extends Module {
     val (aluopDecoded: aluop.AluOp.Type, valid: Bool) = aluop.AluOp.safe(IDUio.aluop)
     assert(valid, "ALU.scala: aluop decode result may be invalid");
 
-    ioMEMWB.res_addr := MuxLookup(aluopDecoded, 0.U)(
+    ioDMEMUX.res_addr := MuxLookup(aluopDecoded, 0.U)(
         Seq(
             AluOp.ADD -> addRes,
             AluOp.SUB -> subRes,

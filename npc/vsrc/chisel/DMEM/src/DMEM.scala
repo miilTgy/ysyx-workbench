@@ -4,6 +4,8 @@ import chisel3._
 import chisel3.util.HasBlackBoxResource
 import chisel3.util.HasBlackBoxPath
 
+import alu.IODMEMUX
+
 class DMEMIO extends Bundle {
     val addr = Input(UInt(64.W))
     val wdata = Input(UInt(64.W))
@@ -19,9 +21,7 @@ class DMEM extends BlackBox with HasBlackBoxPath {
 }
 
 class DMEM_d extends Module {
-    val ALUio = IO(new Bundle {
-        val res_addr = Input(UInt(64.W))
-    })
+    val ALUio = IO(Flipped(new IODMEMUX))
     val GPRio = IO(new Bundle {
         val wdata = Input(UInt(64.W))
     })

@@ -12,6 +12,8 @@ import org.chipsalliance.rvdecoderdb
 import org.chipsalliance.rvdecoderdb.Utils
 
 import aluop._
+import imem.IOIDU
+import gpr.GPRINIO
 
 
 case class Insn(val inst: rvdecoderdb.Instruction) extends DecodePattern {
@@ -103,27 +105,19 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
     }
 }
 
-class IOGPR extends Bundle {
-    val src1 = Output(UInt(5.W))
-    val src2 = Output(UInt(5.W))
-    val rd   = Output(UInt(5.W))
-    val wen  = Output(Bool())
+class IOALU extends Bundle {
+    val aluop = Output(UInt(4.W))
 }
 
 class IDU extends Module {
-    val IMEMio = IO(new Bundle{
-        val pc = Input(UInt(64.W))
-        val inst_data = Input(UInt(32.W))
-    })
+    val IMEMio = IO(Flipped(new imem.IOIDU))
     val ioMUX = IO(new Bundle{
         val alud2slct = Output(Bool())
         val mpasslct  = Output(Bool())
         val imm       = Output(UInt(64.W))
     })
-    val ioALU = IO(new Bundle{
-        val aluop     = Output(UInt(4.W))
-    })
-    val ioGPR = IO(new IOGPR)
+    val ioALU = IO(new IOALU)
+    val ioGPR = IO(Flipped(new gpr.GPRINIO))
 
     val instTable: Iterable[rvdecoderdb.Instruction] =
             rvdecoderdb.instructions(os.pwd / "rvdecoderdb" / "rvdecoderdbtest" / "jvm" / "riscv-opcodes")
