@@ -21,7 +21,7 @@ case class Insn(val inst: rvdecoderdb.Instruction) extends DecodePattern {
 object aluD2slct extends BoolDecodeField[Insn] {
     override def name = "src2 or imm select mux ctrl"
 
-    override def default: BitPat = BitPat(false.B)
+    // override def default: BitPat = BitPat(false.B)
     override def genTable(i: Insn): BitPat = {
         if (Utils.readRs2(i.inst)) {
             BitPat(true.B)
@@ -35,12 +35,12 @@ object aluD2slct extends BoolDecodeField[Insn] {
 object memPasslct extends BoolDecodeField[Insn] {
     override def name = "dmem pass select mux ctrl"
 
-    override def default: BitPat = BitPat(false.B)
+    // override def default: BitPat = BitPat(false.B)
 
     val memInst: Seq[String] = Seq(
         "lb", "lh", "lw", "ld",
         "lbu", "lhu", "lwu",
-        "sb", "sh", "sw", "sd"
+        "sb", "sh", "sw", "sd" // TODO store insts may not needed
     )
     override def genTable(i: Insn): BitPat = {
         if (memInst.contains(i.inst.name)) {
@@ -71,7 +71,7 @@ object GenAluOp extends DecodeField[Insn, UInt] {
 
     override def chiselType = UInt(4.W)
 
-    override def default = BitPat("b1111")
+    // override def default = BitPat("b1111")
 
     override def genTable(op: Insn): BitPat = {
         val aluOp = aluop.AluOpMap.getAluOp(op.inst.name)
@@ -95,7 +95,7 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
             case m if Utils.isB(m.inst)  => ImmTypeEnum.immB
             case m if Utils.isU(m.inst)  => ImmTypeEnum.immU
             case m if Utils.isJ(m.inst)  => ImmTypeEnum.immJ
-            case _                  => ImmTypeEnum.immNone
+            case _                       => ImmTypeEnum.immNone
         }
         
         /* println("BITPAT: " + immType.litValue.U) */
@@ -103,15 +103,27 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
     }
 }
 
+class IOGPR extends Bundle {
+    val src1 = Output(UInt(5.W))
+    val src2 = Output(UInt(5.W))
+    val rd   = Output(UInt(5.W))
+    val wen  = Output(Bool())
+}
+
 class IDU extends Module {
-    val io = IO(new Bundle{
-        val pc        = Input(UInt(64.W))
-        val inst      = Input(UInt(32.W))
+    val IMEMio = IO(new Bundle{
+        val pc = Input(UInt(64.W))
+        val inst_data = Input(UInt(32.W))
+    })
+    val ioMUX = IO(new Bundle{
         val alud2slct = Output(Bool())
         val mpasslct  = Output(Bool())
-        val aluop     = Output(UInt(4.W))
         val imm       = Output(UInt(64.W))
     })
+    val ioALU = IO(new Bundle{
+        val aluop     = Output(UInt(4.W))
+    })
+    val ioGPR = IO(new IOGPR)
 
     val instTable: Iterable[rvdecoderdb.Instruction] =
             rvdecoderdb.instructions(os.pwd / "rvdecoderdb" / "rvdecoderdbtest" / "jvm" / "riscv-opcodes")
@@ -138,20 +150,22 @@ class IDU extends Module {
         .toSeq
 
 
-    val decodeTable = new DecodeTable(rv32imInstList, Seq(aluD2slct, memPasslct, GenAluOp, ImmType))
+    val decodeTable = new DecodeTable(rv32imInstList, Seq(aluD2slct, memPasslct, GenWen, GenAluOp, ImmType))
 
-    val decodeResult = decodeTable.decode(io.inst)
-    io.alud2slct := decodeResult(aluD2slct)
-    io.mpasslct  := decodeResult(memPasslct)
-    io.aluop := decodeResult(GenAluOp)
+    val decodeResult = decodeTable.decode(IMEMio.inst_data)
 
-    val imm_i      = Cat(Fill(52, io.inst(31)), io.inst(31, 20))                                    // I-type
-    val imm_s      = Cat(Fill(52, io.inst(31)), io.inst(31, 25), io.inst(11, 7))                    // S-type
-    val imm_b      = Cat(Fill(52, io.inst(31)), io.inst(7), io.inst(30, 25), io.inst(11, 8), 0.U)   // B-type
-    val imm_u      = Cat(Fill(32, io.inst(31)), io.inst(31, 12), Fill(12, 0.U))                     // U-type
-    val imm_j      = Cat(Fill(44, io.inst(31)), io.inst(19, 12), io.inst(20), io.inst(30, 21), 0.U) // J-type
+    ioMUX.alud2slct := decodeResult(aluD2slct)
+    ioMUX.mpasslct  := decodeResult(memPasslct)
+    ioALU.aluop     := decodeResult(GenAluOp)
+
+    val imm_i    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 20))                                                       // I-type
+    val imm_s    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 25), IMEMio.inst_data(11, 7))                              // S-type
+    val imm_b    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(7), IMEMio.inst_data(30, 25), IMEMio.inst_data(11, 8), 0.U)    // B-type
+    val imm_u    = Cat(Fill(32, IMEMio.inst_data(31)), IMEMio.inst_data(31, 12), Fill(12, 0.U))                                        // U-type
+    val imm_j    = Cat(Fill(44, IMEMio.inst_data(31)), IMEMio.inst_data(19, 12), IMEMio.inst_data(20), IMEMio.inst_data(30, 21), 0.U)  // J-type
     val imm_type = decodeResult(ImmType)
-    io.imm := MuxLookup(imm_type, 0.U)(
+
+    ioMUX.imm := MuxLookup(imm_type, 0.U)(
         Seq(
             ImmTypeEnum.immI    -> imm_i,
             ImmTypeEnum.immS    -> imm_s,
@@ -159,4 +173,9 @@ class IDU extends Module {
             ImmTypeEnum.immU    -> imm_u,
             ImmTypeEnum.immJ    -> imm_j
     ))
+    
+    ioGPR.src1 := IMEMio.inst_data(19, 15)
+    ioGPR.src2 := IMEMio.inst_data(24, 20)
+    ioGPR.rd   := IMEMio.inst_data(11, 7)
+    ioGPR.wen  := decodeResult(GenWen)
 }
