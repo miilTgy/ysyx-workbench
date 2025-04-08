@@ -51,6 +51,21 @@ object memPasslct extends BoolDecodeField[Insn] {
     }
 }
 
+object GenWen extends BoolDecodeField[Insn] {
+    override def name = "gen wen"
+
+    // override def default: BitPat = BitPat(false.B)
+
+    override def genTable(i: Insn): BitPat = {
+        if (Utils.writeRd(i.inst)) {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+
+}
+
 object GenAluOp extends DecodeField[Insn, UInt] {
     override def name = "gen alu op"
 
