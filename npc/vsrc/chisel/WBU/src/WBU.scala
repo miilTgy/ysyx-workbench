@@ -3,9 +3,11 @@ package wbu
 import chisel3._
 
 class WBU extends Module {
-    val io = IO(new Bundle {
-        val dataIn = Input(UInt(64.W))
-        val dataOut = Output(UInt(64.W))
+    val MUXio = IO(new Bundle {
+        val dataWB = Input(UInt(64.W))
     })
-    io.dataOut := io.dataIn
+    val ioGPR = IO(new Bundle {
+        val dataWB = Output(UInt(64.W))
+    })
+    ioGPR.dataWB := MUXio.dataWB
 }
