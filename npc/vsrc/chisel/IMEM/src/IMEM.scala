@@ -8,6 +8,7 @@ class IFUIO extends Bundle {
 }
 
 class IOIDU extends Bundle {
+    val pc = Output(UInt(64.W))
     val inst_data = Output(UInt(32.W))
 }
 
@@ -24,6 +25,8 @@ class IMEM extends BlackBox with HasBlackBoxPath {
 class IMEM_d extends Module {
     val IFUio = IO(new IFUIO)
     val ioIDU = IO(new IOIDU)
+
+    ioIDU.pc := IFUio.pc
 
     val imem = Module(new IMEM())
     imem.io.pc := IFUio.pc
