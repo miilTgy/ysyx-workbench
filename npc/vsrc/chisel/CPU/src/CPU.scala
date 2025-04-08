@@ -23,16 +23,20 @@ class CPU extends Module {
 
     imem.IFUio <> ifu.ioIMEM
     idu.IMEMio <> imem.ioIDU
-    val data2 = Mux(idu.ioMUX.alud2slct, gpr.dataOutIO.data2, idu.ioMUX.imm)
-    alu.IDUio <> idu.ioALU
+    
+    val data2 = Mux(idu.ioMUX.alud2slct, gpr.dataOutio.data2, idu.ioMUX.imm)
     alu.MUXio.data2 := data2
-    alu.GPRio.data1 := gpr.dataOutIO.data1
-    dmem.ALUio <> alu.ioMEMWB
-    dmem.GPRio.wdata := gpr.dataOutIO.data2
-    val dataWB = Mux(idu.ioMUX.mpasslct, dmem.ioMUX.rdata, alu.ioMEMWB.res_addr)
+    alu.GPRio.data1 := gpr.dataOutio.data1
+    
+    alu.IDUio <> idu.ioALU
+    dmem.ALUio <> alu.ioDMEMUX
+
+    dmem.GPRio.wdata := gpr.dataOutio.data2
+    val dataWB = Mux(idu.ioMUX.mpasslct, dmem.ioMUX.rdata, alu.ioDMEMUX.res_addr)
     wbu.MUXio.dataWB := dataWB
+
     gpr.GPRio <> idu.ioGPR
-    gpr.dataInIO <> wbu.ioGPR
+    gpr.dataInio <> wbu.ioGPR
 }
 
 object Main extends App {
