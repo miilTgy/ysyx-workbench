@@ -21,7 +21,7 @@ static inline uint64_t host_read(void *addr, int len) {
 TESTBENCH<VIMEM_d> *__TB__;
 
 // Definition of paddr_rear from DPI-C
-extern "C" int paddr_read(unsigned long long paddr) {
+extern "C" int pimem_read(unsigned long long paddr) {
     int len = 4;
     uint64_t ret = host_read(guest_to_host(paddr), len);
     return ret;
@@ -47,12 +47,12 @@ int main(int argc, char *argv[]) {
 
     init_pmem();
     std::cout << std::hex << *(uint32_t *) guest_to_host(0x80000000) << std::dec << std::endl;
-    TB(DUT(io_im_raddr) = 0x80000000); TB(init_comb([](){}));
+    TB(DUT(IFUio_pc) = 0x80000000); TB(init_comb([](){}));
     for (int i = 0; i < 5; i++) {
         TB(step_comb([&](){
-            TB(DUT(io_im_raddr) = 0x80000000 + i * 4);
+            TB(DUT(IFUio_pc) = 0x80000000 + i * 4);
         }));
-        TB(check_eq(*(uint32_t *)guest_to_host(TB(DUT(io_im_raddr))), TB(DUT(io_inst_data))));
+        TB(check_eq(*(uint32_t *)guest_to_host(TB(DUT(IFUio_pc))), TB(DUT(ioIDU_inst_data))));
     }
     TB(step_comb([](){}));
 
