@@ -50,6 +50,32 @@ object memPasslct extends BoolDecodeField[Insn] {
     }
 }
 
+object PCIncslct extends BoolDecodeField[Insn] {
+    override def name = "pc inc select mux ctrl"
+
+    override def genTable(i: Insn): BitPat = {
+        if ( Utils.isJ(i.inst) ||
+             Utils.isB(i.inst) ||
+             i.inst.name == "jalr" ) {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
+object GenBranchSign extends BoolDecodeField[Insn] {
+    override def name = "gen branch sign"
+
+    override def genTable(i: Insn): BitPat = {
+        if (i.inst.name == "blt" || i.inst.name == "bge") {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
 object GenWen extends BoolDecodeField[Insn] {
     override def name = "gen wen"
 
