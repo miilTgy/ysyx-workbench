@@ -5,10 +5,15 @@ import chisel3.util.HasBlackBoxResource
 import chisel3.util.HasBlackBoxPath
 
 import alu.IODMEMUX
+import idu.IODMEM
 
 class DMEMIO extends Bundle {
-    val addr = Input(UInt(64.W))
+    val men   = Input(Bool())
+    val mwen  = Input(Bool())
+    val wmask = Input(UInt(8.W))
+    val waddr = Input(UInt(64.W))
     val wdata = Input(UInt(64.W))
+    val raddr = Input(UInt(64.W))
     val rdata = Output(UInt(64.W))
 }
 
@@ -16,12 +21,12 @@ class DMEM extends BlackBox with HasBlackBoxPath {
     val io = IO(new DMEMIO)
 
     // Set the resource path for the Verilog file
-    // addResource("/DMEM.v")
     addPath("/home/miil/ysyx-workbench/npc/vsrc/chisel/DMEM/src/DMEM.v")
 }
 
 class DMEM_d extends Module {
-    val ALUio = IO(Flipped(new IODMEMUX))
+    val ALUio = IO(Flipped(new alu.IODMEMUX))
+    val IDUio = IO(Flipped(new idu.IODMEM))
     val GPRio = IO(new Bundle {
         val wdata = Input(UInt(64.W))
     })
@@ -30,7 +35,11 @@ class DMEM_d extends Module {
     })
 
     val dmem = Module(new DMEM())
-    dmem.io.addr := ALUio.res_addr
+    dmem.io.wmask := IDUio.wmask
+    dmem.io.waddr := ALUio.res_addr
     dmem.io.wdata := GPRio.wdata
+    dmem.io.raddr := ALUio.res_addr
+    dmem.io.men := IDUio.menslct
+    dmem.io.mwen := IDUio.mwen
     ioMUX.rdata := dmem.io.rdata
 }
