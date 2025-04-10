@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-04-07 14:34:47
+ * @LastEditTime: 2025-04-10 16:18:26
  * @FilePath: /npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -236,7 +236,9 @@ template<class MODULE>
 class TESTBENCH_TYPE<MODULE, false, true> : public TESTBENCH_CLK<MODULE> {
 public:
     TESTBENCH_TYPE(int argc, char *argv[])
-    : TESTBENCH_CLK<MODULE>(argc, argv){}
+    : TESTBENCH_CLK<MODULE>(argc, argv) {
+        std::cout << "[TESTBENCH] CLK enabled!" << std::endl;
+    }
 
     /**
      * @description: Init sim, must called before any sim
@@ -255,7 +257,9 @@ template<class MODULE>
 class TESTBENCH_TYPE<MODULE, true, true> : public TESTBENCH_CLK<MODULE> {
 public:
     TESTBENCH_TYPE(int argc, char *argv[])
-    : TESTBENCH_CLK<MODULE>(argc, argv){}
+    : TESTBENCH_CLK<MODULE>(argc, argv) {
+        std::cout << "[TESTBENCH] CLK RST enabled!" << std::endl;
+    }
 
     /**
      * @description: Init sim, must called before any sim
