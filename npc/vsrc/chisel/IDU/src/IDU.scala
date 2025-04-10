@@ -80,6 +80,16 @@ object GenAluOp extends DecodeField[Insn, UInt] {
         BitPat(aluOp.litValue.U((aluOp.getWidth).W))
     }
 }
+object GenBranchOp extends DecodeField[Insn, UInt] {
+    override def name: String = "gen branch op"
+    
+    override def chiselType = UInt(2.W)
+
+    override def genTable(op: Insn): BitPat = {
+        val branchOp = aluop.BranchOpMap.getBranchOp(op.inst.name)
+        BitPat(branchOp.litValue.U((branchOp.getWidth).W))
+    }
+}
 
 object ImmTypeEnum extends ChiselEnum {
     val immNone, immI, immS, immB, immU, immJ = Value
@@ -107,6 +117,12 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
 
 class IOALU extends Bundle {
     val aluop = Output(UInt(4.W))
+    val branchop = Output(UInt(2.W))
+    val branchsign = Output(Bool())
+}
+
+class IOJMP extends Bundle {
+    val pcIncslct = Output(Bool())
 }
 
 class IDU extends Module {
@@ -118,6 +134,7 @@ class IDU extends Module {
     })
     val ioALU = IO(new IOALU)
     val ioGPR = IO(Flipped(new gpr.GPRINIO))
+    val ioJMP = IO(new IOJMP)
 
     val instTable: Iterable[rvdecoderdb.Instruction] =
             rvdecoderdb.instructions(os.pwd / "rvdecoderdb" / "rvdecoderdbtest" / "jvm" / "riscv-opcodes")
@@ -144,13 +161,18 @@ class IDU extends Module {
         .toSeq
 
 
-    val decodeTable = new DecodeTable(rv32imInstList, Seq(aluD2slct, memPasslct, GenWen, GenAluOp, ImmType))
+    val decodeTable = new DecodeTable(rv32imInstList, Seq(
+        aluD1slct, aluD2slct, memPasslct, PCIncslct, GenBranchSign, GenWen, GenAluOp, GenBranchOp, ImmType
+        ))
 
     val decodeResult = decodeTable.decode(IMEMio.inst_data)
 
     ioMUX.alud2slct := decodeResult(aluD2slct)
     ioMUX.mpasslct  := decodeResult(memPasslct)
     ioALU.aluop     := decodeResult(GenAluOp)
+    ioALU.branchop  := decodeResult(GenBranchOp)
+    ioALU.branchsign := decodeResult(GenBranchSign)
+    ioJMP.pcIncslct := decodeResult(PCIncslct)
 
     val imm_i    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 20))                                                       // I-type
     val imm_s    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 25), IMEMio.inst_data(11, 7))                              // S-type
