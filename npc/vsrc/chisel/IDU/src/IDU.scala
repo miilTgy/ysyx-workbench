@@ -3,6 +3,7 @@ package idu
 import java.io._
 
 import chisel3._
+import chisel3.dontTouch
 import chisel3.util.BitPat
 import chisel3.util.MuxLookup
 import chisel3.util.Cat
@@ -45,16 +46,15 @@ object aluD2slct extends BoolDecodeField[Insn] {
 }
 
 
-object memPasslct extends BoolDecodeField[Insn] {
+object memEnslct extends BoolDecodeField[Insn] {
     override def name = "dmem pass select mux ctrl"
 
     val memInst: Seq[String] = Seq(
         "lb", "lh", "lw", "ld",
-        "lbu", "lhu", "lwu",
-        "sb", "sh", "sw", "sd" // TODO store insts may not needed
+        "lbu", "lhu", "lwu"
     )
     override def genTable(i: Insn): BitPat = {
-        if (memInst.contains(i.inst.name)) {
+        if (memInst.contains(i.inst.name) || Utils.isS(i.inst)) {
             BitPat(true.B)
         } else {
             BitPat(false.B)
@@ -165,8 +165,7 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
             case m if Utils.isJ(m.inst)  => ImmTypeEnum.immJ
             case _                       => ImmTypeEnum.immNone
         }
-        
-        /* println("BITPAT: " + immType.litValue.U) */
+        println("BITPAT: " + immType.litValue.U + "width=" + immType.getWidth + " " + "name=" + i.inst.name)
         BitPat(immType.litValue.U((immType.getWidth).W))
     }
 }
@@ -224,8 +223,17 @@ class IDU extends Module {
         .toSeq
 
 
+    /* 很玄学的bug：当 ImmType 放在 Seq 中最后一位时，会导致 decodeResult 的值错误！ */
+    // val decodeTable = new DecodeTable(rv32imInstList, Seq(
+    //     aluD1slct, aluD2slct, memEnslct, PCIncslct,
+    //     GenBranchSign, GenWen, GenAluOp, GenBranchOp,
+    //     GenMwen, GenWriteMask, ImmType
+    //     ))
+
     val decodeTable = new DecodeTable(rv32imInstList, Seq(
-        aluD1slct, aluD2slct, memPasslct, PCIncslct, GenBranchSign, GenWen, GenAluOp, GenBranchOp, ImmType
+        ImmType, aluD1slct, aluD2slct, memEnslct, PCIncslct,
+        GenBranchSign, GenWen, GenAluOp, GenBranchOp,
+        GenMwen, GenWriteMask
         ))
 
     val decodeResult = decodeTable.decode(IMEMio.inst_data)
@@ -245,10 +253,17 @@ class IDU extends Module {
     val imm_b    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(7), IMEMio.inst_data(30, 25), IMEMio.inst_data(11, 8), 0.U)    // B-type
     val imm_u    = Cat(Fill(32, IMEMio.inst_data(31)), IMEMio.inst_data(31, 12), Fill(12, 0.U))                                        // U-type
     val imm_j    = Cat(Fill(44, IMEMio.inst_data(31)), IMEMio.inst_data(19, 12), IMEMio.inst_data(20), IMEMio.inst_data(30, 21), 0.U)  // J-type
+    // dontTouch(imm_i)
+    // dontTouch(imm_s)
+    // dontTouch(imm_b)
+    // dontTouch(imm_u)
+    // dontTouch(imm_j)
     val imm_type = decodeResult(ImmType)
+    // dontTouch(imm_type)
 
     ioMUX.imm := MuxLookup(imm_type, 0.U)(
         Seq(
+            ImmTypeEnum.immNone  -> 0.U,
             ImmTypeEnum.immI    -> imm_i,
             ImmTypeEnum.immS    -> imm_s,
             ImmTypeEnum.immB    -> imm_b,
