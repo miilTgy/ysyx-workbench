@@ -23,7 +23,6 @@ case class Insn(val inst: rvdecoderdb.Instruction) extends DecodePattern {
 object aluD2slct extends BoolDecodeField[Insn] {
     override def name = "src2 or imm select mux ctrl"
 
-    // override def default: BitPat = BitPat(false.B)
     override def genTable(i: Insn): BitPat = {
         if (Utils.readRs2(i.inst)) {
             BitPat(true.B)
@@ -36,8 +35,6 @@ object aluD2slct extends BoolDecodeField[Insn] {
 
 object memPasslct extends BoolDecodeField[Insn] {
     override def name = "dmem pass select mux ctrl"
-
-    // override def default: BitPat = BitPat(false.B)
 
     val memInst: Seq[String] = Seq(
         "lb", "lh", "lw", "ld",
@@ -56,8 +53,6 @@ object memPasslct extends BoolDecodeField[Insn] {
 object GenWen extends BoolDecodeField[Insn] {
     override def name = "gen wen"
 
-    // override def default: BitPat = BitPat(false.B)
-
     override def genTable(i: Insn): BitPat = {
         if (Utils.writeRd(i.inst)) {
             BitPat(true.B)
@@ -65,15 +60,12 @@ object GenWen extends BoolDecodeField[Insn] {
             BitPat(false.B)
         }
     }
-
 }
 
 object GenAluOp extends DecodeField[Insn, UInt] {
     override def name = "gen alu op"
 
     override def chiselType = UInt(4.W)
-
-    // override def default = BitPat("b1111")
 
     override def genTable(op: Insn): BitPat = {
         val aluOp = aluop.AluOpMap.getAluOp(op.inst.name)
