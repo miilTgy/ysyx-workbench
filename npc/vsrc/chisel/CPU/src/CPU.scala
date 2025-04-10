@@ -31,9 +31,10 @@ class CPU extends Module {
     
     alu.IDUio <> idu.ioALU
     dmem.ALUio <> alu.ioDMEMUX
+    dmem.IDUio <> idu.ioDMEM
 
     dmem.GPRio.wdata := gpr.dataOutio.data2
-    val dataWB = Mux(idu.ioMUX.mpasslct, dmem.ioMUX.rdata, alu.ioDMEMUX.res_addr)
+    val dataWB = Mux(idu.ioDMEM.menslct, dmem.ioMUX.rdata, alu.ioDMEMUX.res_addr)
     wbu.MUXio.dataWB := dataWB
 
     gpr.GPRio <> idu.ioGPR
