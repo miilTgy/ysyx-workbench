@@ -121,6 +121,32 @@ object GenBranchOp extends DecodeField[Insn, UInt] {
     }
 }
 
+object GenMwen extends BoolDecodeField[Insn] {
+    override def name = "gen mwen"
+
+    override def genTable(i: Insn): BitPat = {
+        if (Utils.isS(i.inst)) {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
+object GenWriteMask extends DecodeField[Insn, UInt] {
+    override def name = "gen write mask"
+
+    override def chiselType = UInt(9.W)
+
+    override def genTable(i: Insn): BitPat = i.inst.name match {
+        case "sb"   => BitPat("b00000001".U(8.W))
+        case "sh"   => BitPat("b00000011".U(8.W))
+        case "sw"   => BitPat("b00001111".U(8.W))
+        case "sd"   => BitPat("b11111111".U(8.W))
+        case _      => BitPat("b00000000".U(8.W))
+    }
+}
+
 object ImmTypeEnum extends ChiselEnum {
     val immNone, immI, immS, immB, immU, immJ = Value
 }
@@ -155,17 +181,23 @@ class IOJMP extends Bundle {
     val pcIncslct = Output(Bool())
 }
 
+class IODMEM extends Bundle {
+    val menslct = Output(Bool())
+    val mwen   = Output(Bool())
+    val wmask   = Output(UInt(8.W))
+}
+
 class IDU extends Module {
     val IMEMio = IO(Flipped(new imem.IOIDU))
     val ioMUX = IO(new Bundle{
         val alud1slct = Output(Bool())
         val alud2slct = Output(Bool())
-        val mpasslct  = Output(Bool())
         val imm       = Output(UInt(64.W))
     })
     val ioALU = IO(new IOALU)
     val ioGPR = IO(Flipped(new gpr.GPRINIO))
     val ioJMP = IO(new IOJMP)
+    val ioDMEM = IO(new IODMEM)
 
     val instTable: Iterable[rvdecoderdb.Instruction] =
             rvdecoderdb.instructions(os.pwd / "rvdecoderdb" / "rvdecoderdbtest" / "jvm" / "riscv-opcodes")
@@ -198,13 +230,15 @@ class IDU extends Module {
 
     val decodeResult = decodeTable.decode(IMEMio.inst_data)
 
-    ioMUX.alud1slct := decodeResult(aluD1slct)
-    ioMUX.alud2slct := decodeResult(aluD2slct)
-    ioMUX.mpasslct  := decodeResult(memPasslct)
-    ioALU.aluop     := decodeResult(GenAluOp)
-    ioALU.branchop  := decodeResult(GenBranchOp)
+    ioMUX.alud1slct  := decodeResult(aluD1slct)
+    ioMUX.alud2slct  := decodeResult(aluD2slct)
+    ioALU.aluop      := decodeResult(GenAluOp)
+    ioALU.branchop   := decodeResult(GenBranchOp)
     ioALU.branchsign := decodeResult(GenBranchSign)
-    ioJMP.pcIncslct := decodeResult(PCIncslct)
+    ioJMP.pcIncslct  := decodeResult(PCIncslct)
+    ioDMEM.menslct   := decodeResult(memEnslct)
+    ioDMEM.mwen      := decodeResult(GenMwen)
+    ioDMEM.wmask     := decodeResult(GenWriteMask)
 
     val imm_i    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 20))                                                       // I-type
     val imm_s    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 25), IMEMio.inst_data(11, 7))                              // S-type
