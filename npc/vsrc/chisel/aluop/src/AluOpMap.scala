@@ -65,3 +65,19 @@ object AluOpMap {
      case _ => throw new IllegalArgumentException(s"Unknown mnemonic: $mnemonic")
   }
 }
+
+object BranchOp extends ChiselEnum {
+  val EQ, NE, LT, GE = Value
+}
+
+object BranchOpMap {
+  def getBranchOp(mnemonic: String): BranchOp.Type = mnemonic match {
+    case "beq"  => BranchOp.EQ
+    case "bne"  => BranchOp.NE
+    case "blt"  => BranchOp.LT
+    case "bltu" => BranchOp.LT
+    case "bge"  => BranchOp.GE
+    case "bgeu" => BranchOp.GE
+    case _      => BranchOp.EQ
+  }
+}
