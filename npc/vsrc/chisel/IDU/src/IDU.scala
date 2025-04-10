@@ -20,6 +20,18 @@ case class Insn(val inst: rvdecoderdb.Instruction) extends DecodePattern {
     override def bitPat: BitPat = BitPat("b" + inst.encoding.toString())
 }
 
+object aluD1slct extends BoolDecodeField[Insn] {
+    override def name = "src1 or pc select mux ctrl"
+
+    override def genTable(i: Insn): BitPat = {
+        if (i.inst.name == "auipc" || Utils.isJ(i.inst)) {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
 object aluD2slct extends BoolDecodeField[Insn] {
     override def name = "src2 or imm select mux ctrl"
 
@@ -146,6 +158,7 @@ class IOJMP extends Bundle {
 class IDU extends Module {
     val IMEMio = IO(Flipped(new imem.IOIDU))
     val ioMUX = IO(new Bundle{
+        val alud1slct = Output(Bool())
         val alud2slct = Output(Bool())
         val mpasslct  = Output(Bool())
         val imm       = Output(UInt(64.W))
@@ -185,6 +198,7 @@ class IDU extends Module {
 
     val decodeResult = decodeTable.decode(IMEMio.inst_data)
 
+    ioMUX.alud1slct := decodeResult(aluD1slct)
     ioMUX.alud2slct := decodeResult(aluD2slct)
     ioMUX.mpasslct  := decodeResult(memPasslct)
     ioALU.aluop     := decodeResult(GenAluOp)
