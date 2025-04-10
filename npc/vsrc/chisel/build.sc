@@ -59,7 +59,7 @@ object ALU extends chiselModule {
 }
 object LSU extends chiselModule {}
 object DMEM extends chiselModule {
-  override def moduleDeps = Seq(ALU)
+  override def moduleDeps = Seq(ALU, IDU)
 }
 object WBU extends chiselModule {}
 object CPU extends chiselModule {
