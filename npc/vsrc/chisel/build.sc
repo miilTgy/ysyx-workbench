@@ -52,7 +52,7 @@ object IMEM extends chiselModule {
 }
 object aluop extends chiselModule {}
 object IDU extends chiselModule {
-  override def moduleDeps = Seq(GPR, aluop, IMEM)
+  override def moduleDeps = Seq(GPR, IFU, aluop, IMEM)
 }
 object ALU extends chiselModule {
   override def moduleDeps = Seq(aluop, IDU)
