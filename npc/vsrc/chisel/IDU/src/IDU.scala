@@ -212,7 +212,8 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
 class IOALU extends Bundle {
     val aluop = Output(UInt(4.W))
     val branchop = Output(UInt(2.W))
-    val branchsign = Output(Bool())
+    val sub = Output(Bool())
+    val condReslct = Output(Bool())
 }
 
 class IOJMP extends Bundle {
