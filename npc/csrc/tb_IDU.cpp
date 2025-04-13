@@ -4,6 +4,10 @@
 #define CONFIG_MBASE 0x80000000
 
 static const uint32_t img [] = {
+  0x00000003,  // lb x0, 0(x0)
+  0x00001003,  // lh x0, 0(x0)
+  0x00002003,  // lw x0, 0(x0)
+  0x00003003,  // ld x0, 0(x0)
   0x00008067,  // jalr x0, 0(x1)
   0x00000297,  // auipc t0,0
   0x00028823,  // sb    zero,16(t0)
@@ -20,20 +24,10 @@ TESTBENCH<VIDU> *__TB__;
 int main(int argc, char *argv[])
 {
     __TB__ = new TESTBENCH<VIDU>(argc, argv);
-    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
-    sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
-    sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
-    sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
-    sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
-    sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
-    sim_pc += 1;
-    TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
-    sim_pc += 1;
+    for (int i = 0; i < 16; i++) {
+      TB(step_comb([](){ TB(DUT(IMEMio_pc)) = sim_pc; TB(DUT(IMEMio_inst_data)) = img[sim_pc - CONFIG_MBASE]; }));
+      sim_pc += 1;
+    }   
     TB(step_comb([](){ }));
     TB(step_comb([](){ }));
     TB(step_comb([](){ }));

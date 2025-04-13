@@ -187,6 +187,20 @@ object GenWriteMask extends DecodeField[Insn, UInt] {
     }
 }
 
+object GenSextPos extends DecodeField[Insn, UInt] {
+    override def name = "gen sext pos"
+
+    override def chiselType = UInt(2.W)
+
+    override def genTable(i: Insn): BitPat = i.inst.name match {
+            case "lb"   => BitPat(0.U(2.W))
+            case "lh"   => BitPat(1.U(2.W))
+            case "lw"   => BitPat(2.U(2.W))
+            case "ld"   => BitPat(3.U(2.W))
+            case _      => BitPat(0.U(2.W))
+    }
+}
+
 object ImmTypeEnum extends ChiselEnum {
     val immNone, immI, immS, immB, immU, immJ = Value
 }
@@ -227,6 +241,10 @@ class IODMEM extends Bundle {
     val wmask   = Output(UInt(8.W))
 }
 
+class IOWBU extends Bundle {
+    val sextPos = Output(UInt(2.W))
+}
+
 class IDU extends Module {
     val IFUio = IO(Flipped(new ifu.IOIMEM))
     val ioPCs = IO(new ifu.IOIMEM)
@@ -242,6 +260,7 @@ class IDU extends Module {
     val ioGPR = IO(Flipped(new gpr.GPRINIO))
     val ioJMP = IO(new IOJMP)
     val ioDMEM = IO(new IODMEM)
+    val ioWBU = IO(new IOWBU)
 
     ioPCs <> IFUio // pc pass through
 
@@ -273,7 +292,7 @@ class IDU extends Module {
     /* 很玄学的bug：当 ImmType 放在 Seq 中最后一位时，会导致 decodeResult 的值错误！ */
     val decodeTable = new DecodeTable(rv32imInstList, Seq(
         ImmType, aluD1slct, aluD2slct, memEnslct, JMPslct, PCInc4slct, PCSrcslct, CondReslct,
-        GenSub, GenWen, GenAluOp, GenBranchOp,
+        GenSub, GenWen, GenAluOp, GenBranchOp, GenSextPos,
         GenMwen, GenWriteMask
         ))
 
@@ -291,6 +310,7 @@ class IDU extends Module {
     ioDMEM.menslct   := decodeResult(memEnslct)
     ioDMEM.mwen      := decodeResult(GenMwen)
     ioDMEM.wmask     := decodeResult(GenWriteMask)
+    ioWBU.sextPos    := decodeResult(GenSextPos)
 
     val imm_i    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 20))                                                       // I-type
     val imm_s    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 25), IMEMio.inst_data(11, 7))                              // S-type
