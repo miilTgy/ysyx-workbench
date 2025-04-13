@@ -270,12 +270,6 @@ class IDU extends Module {
 
 
     /* 很玄学的bug：当 ImmType 放在 Seq 中最后一位时，会导致 decodeResult 的值错误！ */
-    // val decodeTable = new DecodeTable(rv32imInstList, Seq(
-    //     aluD1slct, aluD2slct, memEnslct, PCIncslct,
-    //     GenBranchSign, GenWen, GenAluOp, GenBranchOp,
-    //     GenMwen, GenWriteMask, ImmType
-    //     ))
-
     val decodeTable = new DecodeTable(rv32imInstList, Seq(
         ImmType, aluD1slct, aluD2slct, memEnslct, JMPslct, PCInc4slct, PCSrcslct, CondReslct,
         GenSub, GenWen, GenAluOp, GenBranchOp,
