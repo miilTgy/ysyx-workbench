@@ -12,6 +12,9 @@ import dmem.DMEM_d
 import wbu.WBU
 
 class CPU extends Module {
+    val io = IO(new Bundle {
+        val pc = Output(UInt(64.W))
+    })
 
     val gpr = Module(new GPR())
     val ifu = Module(new IFU())
@@ -20,6 +23,8 @@ class CPU extends Module {
     val alu = Module(new ALU())
     val dmem = Module(new DMEM_d())
     val wbu = Module(new WBU())
+    
+    io.pc := ifu.ioIMEM.pc
 
     imem.IFUio <> ifu.ioIMEM
     idu.IFUio <> ifu.ioIMEM
