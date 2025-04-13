@@ -154,10 +154,12 @@ static int cmd_d(char *args) {
   
 }
 
+#ifdef CONFIG_ITRACE
 static int cmd_itrace(char *args) {
   display_iringbuf();
   return 0;
 }
+#endif
 
 static int cmd_help(char *args);
 
@@ -175,7 +177,9 @@ static struct {
   { "p", "p EXPR, Calculate the value of EXPR", cmd_p},
   { "w", "w EXPR, Set watchpoint", cmd_w},
   { "d", "d NO , Delete watchpoint NO", cmd_d},
+#ifdef CONFIG_ITRACE
   { "itrace", "itrace, Display the instruction trace", cmd_itrace}
+#endif
   /* TODO: Add more commands */
 
 };
