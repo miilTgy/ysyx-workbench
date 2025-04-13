@@ -4,6 +4,7 @@
 #define CONFIG_MBASE 0x80000000
 
 static const uint32_t img [] = {
+  0x00008067,  // jalr x0, 0(x1)
   0x00000297,  // auipc t0,0
   0x00028823,  // sb    zero,16(t0)
   0x0102c503,  // lbu   a0,16(t0)
