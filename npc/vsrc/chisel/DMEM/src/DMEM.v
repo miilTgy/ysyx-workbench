@@ -11,10 +11,10 @@ module DMEM #(
     input   [DATA_WIDTH-1:0]    wdata,
     output  [DATA_WIDTH-1:0]    rdata
 );
-    import "DPI-C" function int pmem_read(input longint unsigned raddr);
-    import "DPI-C" function void pmem_write(input longint unsigned waddr, input longint unsigned wdata, input byte wmask);
+    import "DPI-C" function longint unsigned pmem_read(input longint unsigned raddr);
+    import "DPI-C" function void pmem_write(input longint unsigned waddr, input longint unsigned wdata, input byte unsigned wmask);
 
-    reg [31:0] _rdata;
+    reg [64-1:0] _rdata;
     always @(*) begin
         if (men) begin // 有读写请求时
             _rdata = pmem_read(raddr);
@@ -25,5 +25,6 @@ module DMEM #(
         else begin
             _rdata = 0;
         end
-    end    
+    end
+    assign rdata = _rdata;
 endmodule
