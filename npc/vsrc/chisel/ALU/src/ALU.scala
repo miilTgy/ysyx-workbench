@@ -23,9 +23,10 @@ class ALU extends Module {
     /* 一：aluop是ADD（jal和jalrn指令）；为高*/
     /* 二：aluop是SUB（B类型指令）&& 比较结果为真；为高*/
 
-    val data2s = (MUXio.data2 ^ Fill(64, IDUio.branchsign)) + Cat(0.U(63.W), IDUio.branchsign)
+    val data2s = (MUXio.data2 ^ Fill(64, IDUio.sub)) + Cat(0.U(63.W), IDUio.sub)
 
-    val addsubRes = MUXio.data1 + data2s
+    val addsubTmp = MUXio.data1 + data2s
+    val addsubRes = Mux(IDUio.condReslct, Cat(Fill(63, 0.U(1.W)), addsubTmp(63)), addsubTmp)
     // val subRes = GPRio.data1 - MUXio.data2
     val xorRes = MUXio.data1 ^ MUXio.data2
     val orRes  = MUXio.data1 | MUXio.data2
