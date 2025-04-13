@@ -38,7 +38,7 @@ object aluD2slct extends BoolDecodeField[Insn] {
     override def name = "src2 or imm select mux ctrl"
 
     override def genTable(i: Insn): BitPat = {
-        if (Utils.readRs2(i.inst)) {
+        if (Utils.readRs2(i.inst) && !Utils.isS(i.inst)) {
             BitPat(true.B)
         } else {
             BitPat(false.B)
