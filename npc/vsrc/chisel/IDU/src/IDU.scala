@@ -14,6 +14,7 @@ import org.chipsalliance.rvdecoderdb.Utils
 
 import aluop._
 import imem.IOIDU
+import ifu.IOIMEM
 import gpr.GPRINIO
 
 
@@ -62,7 +63,7 @@ object memEnslct extends BoolDecodeField[Insn] {
     }
 }
 
-object PCIncslct extends BoolDecodeField[Insn] {
+object JMPslct extends BoolDecodeField[Insn] {
     override def name = "pc inc select mux ctrl"
 
     override def genTable(i: Insn): BitPat = {
