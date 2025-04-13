@@ -7,6 +7,9 @@ VERILATOR_TB += $(shell find $(abspath ./csrc) -name "tb_$(TOP).cpp")
 VERILATOR_TOP = --top-module $(PREFIX)$(TOP)
 VERILATOR_EXE = obj_dir/V$(PREFIX)$(TOP)
 
+IMG ?=
+DIFF ?= -d /home/miil/ysyx-workbench/nemu/build/riscv64-nemu-interpreter-so 
+
 CSRC += $(shell find $(abspath ./csrc) -name "*.cpp")
 VSRC += $(filter-out $(abspath ./vsrc/chisel)/%.v, $(shell find $(abspath ./vsrc) -name "*.v"))
 VSRC += $(shell find $(abspath ./vsrc) -name "*.sv")
@@ -24,7 +27,7 @@ sim: $(VERILATOR_TB)
 	@$(foreach file, $(VERILATOR_TB), echo "	$(file)";)
 	verilator $(VERILATOR_CFLAGS) $(VERILATOR_TOP) $(VSRC) \
 		-exe --build $(VERILATOR_TB)
-	time $(VERILATOR_EXE) +verilator+rand+reset+1
+	time $(VERILATOR_EXE) $(DIFF) $(IMG) +verilator+rand+reset+1
 
 genc: $(shell find $(abspath ./vsrc) -name "$(PREFIX)$(TOP).v") clean
 	verilator $(VERILATOR_CFLAGS) $(VERILATOR_TOP) $(VSRC)

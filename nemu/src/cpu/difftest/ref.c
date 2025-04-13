@@ -19,15 +19,36 @@
 #include <memory/paddr.h>
 
 __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
-  assert(0);
+  if (direction == DIFFTEST_TO_REF) {
+    memcpy(guest_to_host(addr), buf, n);
+  } else {
+    assert(0);
+    // memcpy(buf, guest_to_host(addr), n);
+  }
 }
 
 __EXPORT void difftest_regcpy(void *dut, bool direction) {
-  assert(0);
+  if (direction == DIFFTEST_TO_REF) {
+    for (size_t i = 0; i < 32; i++) {
+      cpu.gpr[i] = ((CPU_state *) dut)->gpr[i];
+      extern const char *regs[];
+      printf("<reg_cpy> set regs %s to 0x%016lx\n", regs[i], cpu.gpr[i]);
+    }
+    cpu.pc = ((CPU_state *) dut)->pc;
+    // isa_reg_display();
+  } else {
+    for (size_t i = 0; i < 32; i++) {
+      ((CPU_state *) dut)->gpr[i] = cpu.gpr[i];
+      // extern const char *regs[];
+      // printf("<reg_cpy> to dut reg %s value 0x%016lx\n", regs[i], cpu.gpr[i]);
+    }
+    ((CPU_state *) dut)->pc = cpu.pc;
+    // isa_reg_display();
+  }
 }
 
 __EXPORT void difftest_exec(uint64_t n) {
-  assert(0);
+  cpu_exec(n);
 }
 
 __EXPORT void difftest_raise_intr(word_t NO) {
@@ -36,6 +57,7 @@ __EXPORT void difftest_raise_intr(word_t NO) {
 
 __EXPORT void difftest_init(int port) {
   void init_mem();
+  printf("Starting nemu memory...\n");
   init_mem();
   /* Perform ISA dependent initialization. */
   init_isa();
