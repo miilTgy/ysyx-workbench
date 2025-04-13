@@ -63,10 +63,10 @@ class ALU extends Module {
         Seq(
             BranchOp.EQ -> (addsubRes === 0.U),
             BranchOp.NE -> (addsubRes =/= 0.U),
-            BranchOp.LT -> (Mux(IDUio.branchsign, addsubRes.asSInt < 0.S, addsubRes.asUInt < 0.U)),
-            BranchOp.GE -> (Mux(IDUio.branchsign, addsubRes.asSInt >= 0.S, addsubRes.asUInt >= 0.U))
+            BranchOp.LT -> (Mux(IDUio.sub, addsubRes.asSInt < 0.S, addsubRes.asUInt < 0.U)),
+            BranchOp.GE -> (Mux(IDUio.sub, addsubRes.asSInt >= 0.S, addsubRes.asUInt >= 0.U))
         )
     )
-    ioJMP.pcIncslct := (IDUio.aluop === aluop.AluOp.ADD.litValue.U((aluop.AluOp.getWidth).W)) ||
+    ioJMP.jmpslct := (IDUio.aluop === aluop.AluOp.ADD.litValue.U((aluop.AluOp.getWidth).W)) ||
                        (IDUio.aluop === aluop.AluOp.SUB.litValue.U((aluop.AluOp.getWidth).W) && branchRes)
 }
