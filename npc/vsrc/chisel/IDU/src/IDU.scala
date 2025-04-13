@@ -76,7 +76,46 @@ object PCIncslct extends BoolDecodeField[Insn] {
     }
 }
 
-object GenBranchSign extends BoolDecodeField[Insn] {
+object PCInc4slct extends BoolDecodeField[Insn] {
+    override def name = "pc inc 4 or imm select mux ctrl"
+
+    override def genTable(i: Insn): BitPat = {
+        if (i.inst.name == "jal" || i.inst.name == "jalr") {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
+object PCSrcslct extends BoolDecodeField[Insn] {
+    override def name = "pc or src select mux ctrl"
+
+    override def genTable(i: Insn): BitPat = {
+        if (i.inst.name == "jalr") {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
+object CondReslct extends BoolDecodeField[Insn] {
+    override def name = "cond result select mux ctrl"
+
+    val InstSeq: Seq[String] = Seq(
+        "slti", "sltiu", "slt", "sltu"
+    )
+    override def genTable(i: Insn): BitPat = {
+        if (InstSeq.contains(i.inst.name)) {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
+object GenSub extends BoolDecodeField[Insn] {
     override def name = "gen branch sign"
 
     override def genTable(i: Insn): BitPat = {
@@ -177,7 +216,7 @@ class IOALU extends Bundle {
 }
 
 class IOJMP extends Bundle {
-    val pcIncslct = Output(Bool())
+    val jmpslct = Output(Bool())
 }
 
 class IODMEM extends Bundle {
@@ -187,16 +226,22 @@ class IODMEM extends Bundle {
 }
 
 class IDU extends Module {
+    val IFUio = IO(Flipped(new ifu.IOIMEM))
+    val ioPCs = IO(new ifu.IOIMEM)
     val IMEMio = IO(Flipped(new imem.IOIDU))
     val ioMUX = IO(new Bundle{
         val alud1slct = Output(Bool())
         val alud2slct = Output(Bool())
+        val pcInc4slct = Output(Bool())
+        val pcsrcslct = Output(Bool())
         val imm       = Output(UInt(64.W))
     })
     val ioALU = IO(new IOALU)
     val ioGPR = IO(Flipped(new gpr.GPRINIO))
     val ioJMP = IO(new IOJMP)
     val ioDMEM = IO(new IODMEM)
+
+    ioPCs <> IFUio // pc pass through
 
     val instTable: Iterable[rvdecoderdb.Instruction] =
             rvdecoderdb.instructions(os.pwd / "rvdecoderdb" / "rvdecoderdbtest" / "jvm" / "riscv-opcodes")
@@ -231,8 +276,8 @@ class IDU extends Module {
     //     ))
 
     val decodeTable = new DecodeTable(rv32imInstList, Seq(
-        ImmType, aluD1slct, aluD2slct, memEnslct, PCIncslct,
-        GenBranchSign, GenWen, GenAluOp, GenBranchOp,
+        ImmType, aluD1slct, aluD2slct, memEnslct, JMPslct, PCInc4slct, PCSrcslct, CondReslct,
+        GenSub, GenWen, GenAluOp, GenBranchOp,
         GenMwen, GenWriteMask
         ))
 
@@ -240,10 +285,13 @@ class IDU extends Module {
 
     ioMUX.alud1slct  := decodeResult(aluD1slct)
     ioMUX.alud2slct  := decodeResult(aluD2slct)
+    ioMUX.pcInc4slct := decodeResult(PCInc4slct)
+    ioMUX.pcsrcslct := decodeResult(PCSrcslct)
     ioALU.aluop      := decodeResult(GenAluOp)
     ioALU.branchop   := decodeResult(GenBranchOp)
-    ioALU.branchsign := decodeResult(GenBranchSign)
-    ioJMP.pcIncslct  := decodeResult(PCIncslct)
+    ioALU.sub := decodeResult(GenSub)
+    ioALU.condReslct := decodeResult(CondReslct)
+    ioJMP.jmpslct    := decodeResult(JMPslct)
     ioDMEM.menslct   := decodeResult(memEnslct)
     ioDMEM.mwen      := decodeResult(GenMwen)
     ioDMEM.wmask     := decodeResult(GenWriteMask)
