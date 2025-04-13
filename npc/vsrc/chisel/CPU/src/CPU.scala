@@ -1,6 +1,7 @@
 package cpu
 
 import chisel3._
+import chisel3.dontTouch
 
 import gpr.GPR
 import ifu.IFU
@@ -30,9 +31,10 @@ class CPU extends Module {
     idu.IFUio <> ifu.ioIMEM
     idu.IMEMio <> imem.ioIDU
     
-    val data1 = Mux(idu.ioMUX.alud1slct, ifu.ioIMEM.pc, gpr.dataOutio.data1)
+    val data1 = Mux(idu.ioMUX.alud1slct, idu.ioPCs.pc, gpr.dataOutio.data1)
     alu.MUXio.data1 := data1
-    val data2 = Mux(idu.ioMUX.alud2slct, gpr.dataOutio.data2, idu.ioMUX.imm)
+    val pcInc = Mux(idu.ioMUX.pcInc4slct, 4.U(64.W), idu.ioMUX.imm)
+    val data2 = Mux(idu.ioMUX.alud2slct, gpr.dataOutio.data2, pcInc)
     alu.MUXio.data2 := data2
     
     alu.IDUio <> idu.ioALU
