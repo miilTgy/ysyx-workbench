@@ -22,6 +22,7 @@ class CPU extends Module {
     val wbu = Module(new WBU())
 
     imem.IFUio <> ifu.ioIMEM
+    idu.IFUio <> ifu.ioIMEM
     idu.IMEMio <> imem.ioIDU
     
     val data1 = Mux(idu.ioMUX.alud1slct, ifu.ioIMEM.pc, gpr.dataOutio.data1)
@@ -40,10 +41,13 @@ class CPU extends Module {
     gpr.GPRio <> idu.ioGPR
     gpr.dataInio <> wbu.ioGPR
 
-    val pcIncslct = idu.ioJMP.pcIncslct & alu.ioJMP.pcIncslct
-    val pcInc4 = ifu.ioIMEM.pc + 4.U
-    val pcIncimm = ifu.ioIMEM.pc + idu.ioMUX.imm
-    ifu.MUXio.pcNext := Mux(pcIncslct, pcIncimm, pcInc4)
+    val jmpslct = idu.ioJMP.jmpslct & alu.ioJMP.jmpslct
+    val snpc = ifu.ioIMEM.pc + 4.U
+    val pcsrc = Mux(idu.ioMUX.pcsrcslct, gpr.dataOutio.data1, ifu.ioIMEM.pc)
+    dontTouch(snpc)
+    val dnpc = idu.ioMUX.imm + pcsrc
+    dontTouch(dnpc)
+    ifu.MUXio.pcNext := Mux(jmpslct, dnpc, snpc)
 }
 
 object Main extends App {
