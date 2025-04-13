@@ -119,7 +119,7 @@ object GenSub extends BoolDecodeField[Insn] {
     override def name = "gen branch sign"
 
     override def genTable(i: Insn): BitPat = {
-        if (i.inst.name == "blt" || i.inst.name == "bge") {
+        if (aluop.AluOpMap.SubSeq.contains(i.inst.name)) {
             BitPat(true.B)
         } else {
             BitPat(false.B)
