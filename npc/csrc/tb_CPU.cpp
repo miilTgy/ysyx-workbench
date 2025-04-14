@@ -81,13 +81,13 @@ int main(int argc, char *argv[]) {
         set_cpu();
         TB(cycles(1));
         if (npc_state == NPC_ABORT) {
-            std::cout << "[HIT] NPC_ABORT" << std::endl;
+            printf("%s[HIT] NPC_ABORT%s\n", ANSI_BG_RED, ANSI_NONE);
             break;
         } else if (npc_state == NPC_END) {
-            std::cout << "[HIT] NPC_END" << std::endl;
+            printf("%s[HIT] NPC_END%s\n", ANSI_BG_GREEN, ANSI_NONE);
             break;
         } else if (cycle_num > 10000) {
-            std::cout << "[HIT] TIMEOUT" << std::endl;
+            printf("%s[HIT] NPC_TIMEOUT%s\n", ANSI_BG_YELLOW, ANSI_NONE);
             npc_state = NPC_ABORT;
             break;
         }
