@@ -3,6 +3,9 @@ package dmem
 import chisel3._
 import chisel3.util.HasBlackBoxResource
 import chisel3.util.HasBlackBoxPath
+import chisel3.util.Fill
+import chisel3.util.Cat
+import chisel3.util.MuxLookup
 
 import alu.IODMEMUX
 import idu.IODMEM
@@ -41,5 +44,16 @@ class DMEM_d extends Module {
     dmem.io.raddr := ALUio.res_addr
     dmem.io.men := IDUio.menslct
     dmem.io.mwen := IDUio.mwen
-    ioMUX.rdata := dmem.io.rdata
+    val lbSext = Cat(Fill(56, dmem.io.rdata(7)), dmem.io.rdata(7,0))
+    val lhSext = Cat(Fill(48, dmem.io.rdata(15)), dmem.io.rdata(15,0))
+    val lwSext = Cat(Fill(32, dmem.io.rdata(31)), dmem.io.rdata(31,0))
+
+    ioMUX.rdata := MuxLookup(IDUio.sextPos, dmem.io.rdata)(
+        Seq(
+            0.U -> lbSext,
+            1.U -> lhSext,
+            2.U -> lwSext,
+            3.U -> dmem.io.rdata
+        )
+    )
 }
