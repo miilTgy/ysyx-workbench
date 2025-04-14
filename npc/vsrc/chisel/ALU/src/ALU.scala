@@ -27,7 +27,8 @@ class ALU extends Module {
     val data2s = (MUXio.data2 ^ Fill(64, IDUio.sub)) + Cat(0.U(63.W), IDUio.sub)
 
     val addsubTmp = MUXio.data1 + data2s
-    val addsubRes = Mux(IDUio.condReslct, Cat(Fill(63, 0.U(1.W)), addsubTmp(63)), addsubTmp)
+    val addsubTmpSext = Mux(IDUio.Sext, Cat(Fill(32, addsubTmp(31)), addsubTmp(31, 0)), addsubTmp)
+    val addsubRes = Mux(IDUio.condReslct, Cat(Fill(63, 0.U(1.W)), addsubTmp(63)), addsubTmpSext)
     // val subRes = GPRio.data1 - MUXio.data2
     val xorRes = MUXio.data1 ^ MUXio.data2
     val orRes  = MUXio.data1 | MUXio.data2
