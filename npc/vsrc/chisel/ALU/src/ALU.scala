@@ -3,6 +3,7 @@ package alu
 import chisel3._
 import chisel3.util.MuxLookup
 import chisel3.util.Fill
+import chisel3.dontTouch
 
 import aluop._
 import idu.{IOALU, IOJMP}
@@ -53,20 +54,28 @@ class ALU extends Module {
             AluOp.SRA -> sraRes,
             AluOp.MUL -> mulRes,
             AluOp.DIV -> divRes,
-            AluOp.REM -> remRes
+            AluOp.REM -> remRes,
+            AluOp.BEQ -> addsubRes,
+            AluOp.BNE -> addsubRes,
+            AluOp.BLT -> addsubRes,
+            AluOp.BGE -> addsubRes
     ))
 
-    val (branchopDecoded: aluop.BranchOp.Type, validb: Bool) = aluop.BranchOp.safe(IDUio.branchop)
-    assert(validb, "ALU.scala: branchop decode result may be invalid");
-
-    val branchRes = MuxLookup(branchopDecoded, 0.B)(
+    val branchRes = MuxLookup(aluopDecoded, 0.B)(
         Seq(
-            BranchOp.EQ -> (addsubRes === 0.U),
-            BranchOp.NE -> (addsubRes =/= 0.U),
-            BranchOp.LT -> (Mux(IDUio.sub, addsubRes.asSInt < 0.S, addsubRes.asUInt < 0.U)),
-            BranchOp.GE -> (Mux(IDUio.sub, addsubRes.asSInt >= 0.S, addsubRes.asUInt >= 0.U))
+            AluOp.BEQ -> (addsubRes === 0.U),
+            AluOp.BNE -> (addsubRes =/= 0.U),
+            AluOp.BLT -> (Mux(IDUio.sub, addsubRes.asSInt < 0.S, addsubRes.asUInt < 0.U)),
+            AluOp.BGE -> (Mux(IDUio.sub, addsubRes.asSInt >= 0.S, addsubRes.asUInt >= 0.U))
         )
     )
+    dontTouch(branchRes)
+    val branchOper = (IDUio.aluop === aluop.AluOp.BEQ.litValue.U((aluop.AluOp.getWidth).W)) ||
+                     (IDUio.aluop === aluop.AluOp.BNE.litValue.U((aluop.AluOp.getWidth).W)) ||
+                     (IDUio.aluop === aluop.AluOp.BLT.litValue.U((aluop.AluOp.getWidth).W)) ||
+                     (IDUio.aluop === aluop.AluOp.BGE.litValue.U((aluop.AluOp.getWidth).W))
+    dontTouch(branchOper)
+
     ioJMP.jmpslct := (IDUio.aluop === aluop.AluOp.ADD.litValue.U((aluop.AluOp.getWidth).W)) ||
-                       (IDUio.aluop === aluop.AluOp.SUB.litValue.U((aluop.AluOp.getWidth).W) && branchRes)
+                       (branchOper && branchRes)
 }

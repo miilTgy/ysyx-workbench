@@ -4,7 +4,9 @@ import chisel3._
 import chisel3.util._
 
 object AluOp extends ChiselEnum {
-  val ADD, SUB, XOR, OR, AND, SLL, SLR, SRA, MUL, DIV, REM = Value
+  val ADD, SUB, XOR, OR, AND,
+  SLL, SLR, SRA, MUL, DIV, REM,
+  BEQ, BNE, BLT, BGE = Value
 }
 
 object AluOpMap {
@@ -18,8 +20,7 @@ object AluOpMap {
   )
   val SubSeq : Seq[String] = Seq(
     "slti", "sltiu", "slt", "sltu",
-    "sub", "subw",
-    "beq", "bne", "blt", "bge", "bltu", "bgeu"
+    "sub", "subw"
   )
   val XorSeq : Seq[String] = Seq(
     "xori", "xor"
@@ -48,6 +49,18 @@ object AluOpMap {
   val RemSeq : Seq[String] = Seq(
     "rem", "remu", "remw", "remuw"
   )
+  val BeqSeq : Seq[String] = Seq(
+    "beq"
+  )
+  val BneSeq : Seq[String] = Seq(
+    "bne"
+  )
+  val BltSeq : Seq[String] = Seq(
+    "blt", "bltu"
+  )
+  val BgeSeq : Seq[String] = Seq(
+    "bge", "bgeu"
+  )
 
   // 转换函数
   def getAluOp(mnemonic: String): AluOp.Type = mnemonic match {
@@ -62,22 +75,10 @@ object AluOpMap {
     case m if MulSeq.contains(m) => AluOp.MUL
     case m if DivSeq.contains(m) => AluOp.DIV
     case m if RemSeq.contains(m) => AluOp.REM
-     case _ => throw new IllegalArgumentException(s"Unknown mnemonic: $mnemonic")
-  }
-}
-
-object BranchOp extends ChiselEnum {
-  val EQ, NE, LT, GE = Value
-}
-
-object BranchOpMap {
-  def getBranchOp(mnemonic: String): BranchOp.Type = mnemonic match {
-    case "beq"  => BranchOp.EQ
-    case "bne"  => BranchOp.NE
-    case "blt"  => BranchOp.LT
-    case "bltu" => BranchOp.LT
-    case "bge"  => BranchOp.GE
-    case "bgeu" => BranchOp.GE
-    case _      => BranchOp.EQ
+    case m if BeqSeq.contains(m) => AluOp.BEQ
+    case m if BneSeq.contains(m) => AluOp.BNE
+    case m if BltSeq.contains(m) => AluOp.BLT
+    case m if BgeSeq.contains(m) => AluOp.BGE
+    case _ => throw new IllegalArgumentException(s"Unknown mnemonic: $mnemonic")
   }
 }

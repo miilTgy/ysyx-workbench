@@ -150,16 +150,6 @@ object GenAluOp extends DecodeField[Insn, UInt] {
         BitPat(aluOp.litValue.U((aluOp.getWidth).W))
     }
 }
-object GenBranchOp extends DecodeField[Insn, UInt] {
-    override def name: String = "gen branch op"
-    
-    override def chiselType = UInt(2.W)
-
-    override def genTable(op: Insn): BitPat = {
-        val branchOp = aluop.BranchOpMap.getBranchOp(op.inst.name)
-        BitPat(branchOp.litValue.U((branchOp.getWidth).W))
-    }
-}
 
 object GenMwen extends BoolDecodeField[Insn] {
     override def name = "gen mwen"
@@ -226,7 +216,6 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
 
 class IOALU extends Bundle {
     val aluop = Output(UInt(4.W))
-    val branchop = Output(UInt(2.W))
     val sub = Output(Bool())
     val condReslct = Output(Bool())
 }
@@ -292,7 +281,7 @@ class IDU extends Module {
     /* 很玄学的bug：当 ImmType 放在 Seq 中最后一位时，会导致 decodeResult 的值错误！ */
     val decodeTable = new DecodeTable(rv32imInstList, Seq(
         ImmType, aluD1slct, aluD2slct, memEnslct, JMPslct, PCInc4slct, PCSrcslct, CondReslct,
-        GenSub, GenWen, GenAluOp, GenBranchOp, GenSextPos,
+        GenSub, GenWen, GenAluOp, GenSextPos,
         GenMwen, GenWriteMask
         ))
 
@@ -303,7 +292,6 @@ class IDU extends Module {
     ioMUX.pcInc4slct := decodeResult(PCInc4slct)
     ioMUX.pcsrcslct := decodeResult(PCSrcslct)
     ioALU.aluop      := decodeResult(GenAluOp)
-    ioALU.branchop   := decodeResult(GenBranchOp)
     ioALU.sub := decodeResult(GenSub)
     ioALU.condReslct := decodeResult(CondReslct)
     ioJMP.jmpslct    := decodeResult(JMPslct)
