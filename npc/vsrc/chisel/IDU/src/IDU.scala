@@ -120,7 +120,11 @@ object GenSub extends BoolDecodeField[Insn] {
     override def name = "gen branch sign"
 
     override def genTable(i: Insn): BitPat = {
-        if (aluop.AluOpMap.SubSeq.contains(i.inst.name)) {
+        if (aluop.AluOpMap.SubSeq.contains(i.inst.name) ||
+            aluop.AluOpMap.BeqSeq.contains(i.inst.name) ||
+            aluop.AluOpMap.BneSeq.contains(i.inst.name) ||
+            aluop.AluOpMap.BltSeq.contains(i.inst.name) ||
+            aluop.AluOpMap.BgeSeq.contains(i.inst.name)) {
             BitPat(true.B)
         } else {
             BitPat(false.B)
@@ -187,8 +191,29 @@ object GenSextPos extends DecodeField[Insn, UInt] {
             case "lh"   => BitPat(1.U(2.W))
             case "lw"   => BitPat(2.U(2.W))
             case "ld"   => BitPat(3.U(2.W))
-            case _      => BitPat(0.U(2.W))
+            case _      => BitPat(3.U(2.W))
     }
+}
+
+object GenAluSext extends DecodeField[Insn, Bool] {
+    override def name = "gen alu sext"
+
+    override def chiselType = Bool()
+
+    val AluSextSeq: Seq[String] = Seq(
+        "addiw", "slliw", "srliw", "sraiw",
+        "addw", "sllw", "srlw", "sraw",
+        "mulw", "divw", "divuw", "remw", "remuw"
+    )
+
+    override def genTable(i: Insn): BitPat = {
+        if (AluSextSeq.contains(i.inst.name)) {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+       }
+    }
+
 }
 
 object ImmTypeEnum extends ChiselEnum {
@@ -218,6 +243,7 @@ class IOALU extends Bundle {
     val aluop = Output(UInt(4.W))
     val sub = Output(Bool())
     val condReslct = Output(Bool())
+    val Sext = Output(Bool())
 }
 
 class IOJMP extends Bundle {
@@ -228,10 +254,10 @@ class IODMEM extends Bundle {
     val menslct = Output(Bool())
     val mwen   = Output(Bool())
     val wmask   = Output(UInt(8.W))
+    val sextPos = Output(UInt(2.W))
 }
 
 class IOWBU extends Bundle {
-    val sextPos = Output(UInt(2.W))
 }
 
 class IDU extends Module {
@@ -281,7 +307,7 @@ class IDU extends Module {
     /* 很玄学的bug：当 ImmType 放在 Seq 中最后一位时，会导致 decodeResult 的值错误！ */
     val decodeTable = new DecodeTable(rv32imInstList, Seq(
         ImmType, aluD1slct, aluD2slct, memEnslct, JMPslct, PCInc4slct, PCSrcslct, CondReslct,
-        GenSub, GenWen, GenAluOp, GenSextPos,
+        GenSub, GenWen, GenAluOp, GenSextPos, GenAluSext,
         GenMwen, GenWriteMask
         ))
 
@@ -294,11 +320,12 @@ class IDU extends Module {
     ioALU.aluop      := decodeResult(GenAluOp)
     ioALU.sub := decodeResult(GenSub)
     ioALU.condReslct := decodeResult(CondReslct)
+    ioALU.Sext := decodeResult(GenAluSext)
     ioJMP.jmpslct    := decodeResult(JMPslct)
     ioDMEM.menslct   := decodeResult(memEnslct)
     ioDMEM.mwen      := decodeResult(GenMwen)
     ioDMEM.wmask     := decodeResult(GenWriteMask)
-    ioWBU.sextPos    := decodeResult(GenSextPos)
+    ioDMEM.sextPos    := decodeResult(GenSextPos)
 
     val imm_i    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 20))                                                       // I-type
     val imm_s    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 25), IMEMio.inst_data(11, 7))                              // S-type
