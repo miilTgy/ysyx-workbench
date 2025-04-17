@@ -224,6 +224,10 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
 
     override def chiselType = ImmTypeEnum()
     
+    def isIshamt(instruction: rvdecoderdb.Instruction): Boolean = {
+        instruction.args.map(_.name) == Seq("rd", "rs1", "shamtd") ||
+        instruction.args.map(_.name) == Seq("rd", "rs1", "shamtw")
+    }
     override def genTable(i: Insn): BitPat = {
         val immType = i match {
             case m if Utils.isI(m.inst)  => ImmTypeEnum.immI
@@ -231,9 +235,10 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
             case m if Utils.isB(m.inst)  => ImmTypeEnum.immB
             case m if Utils.isU(m.inst)  => ImmTypeEnum.immU
             case m if Utils.isJ(m.inst)  => ImmTypeEnum.immJ
+            case m if isIshamt(m.inst)   => ImmTypeEnum.immI
             case _                       => ImmTypeEnum.immNone
         }
-        println("BITPAT: " + immType.litValue.U + "width=" + immType.getWidth + " " + "name=" + i.inst.name)
+        // println("BITPAT: " + immType.litValue.U + "width=" + immType.getWidth + " " + "name=" + i.inst.name)
         BitPat(immType.litValue.U((immType.getWidth).W))
     }
 }
