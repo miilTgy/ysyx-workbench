@@ -46,7 +46,9 @@ void sdb_set_batch_mode();
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
+#ifdef CONFIG_FTRACE
 static char elf_file[256];
+#endif
 static int difftest_port = 1234;
 
 static long load_img() {
@@ -71,6 +73,7 @@ static long load_img() {
   return size;
 }
 
+#ifdef CONFIG_FTRACE
 static void load_elf() {
   if (img_file == NULL) {
     Log("No elf is given.");
@@ -149,6 +152,7 @@ static void load_elf() {
   }
 
 }
+#endif
 
 static int parse_args(int argc, char *argv[]) {
   for (int i=0; i<argc; i++) {
@@ -207,10 +211,10 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
-
+#ifdef CONFIG_FTRACE
   /* Load the ELF file. */
   load_elf();
-
+#endif
   /* Initialize differential testing. */
   init_difftest(diff_so_file, img_size, difftest_port);
 
