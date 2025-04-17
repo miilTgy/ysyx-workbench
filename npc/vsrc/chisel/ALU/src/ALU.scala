@@ -107,6 +107,6 @@ class ALU extends Module {
                      (IDUio.aluop === aluop.AluOp.BGE.litValue.U((aluop.AluOp.getWidth).W))
     dontTouch(branchOper)
 
-    ioJMP.jmpslct := (IDUio.aluop === aluop.AluOp.ADD.litValue.U((aluop.AluOp.getWidth).W)) ||
+    ioJMP.jmpslct := ((IDUio.aluop === aluop.AluOp.ADDSUB.litValue.U((aluop.AluOp.getWidth).W)) && ~ IDUio.sub) ||
                        (branchOper && branchRes)
 }
