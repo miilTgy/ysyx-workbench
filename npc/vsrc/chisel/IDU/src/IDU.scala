@@ -367,26 +367,28 @@ class IDU extends Module {
     val imm_b    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(7), IMEMio.inst_data(30, 25), IMEMio.inst_data(11, 8), 0.U)    // B-type
     val imm_u    = Cat(Fill(32, IMEMio.inst_data(31)), IMEMio.inst_data(31, 12), Fill(12, 0.U))                                        // U-type
     val imm_j    = Cat(Fill(44, IMEMio.inst_data(31)), IMEMio.inst_data(19, 12), IMEMio.inst_data(20), IMEMio.inst_data(30, 21), 0.U)  // J-type
-    // dontTouch(imm_i)
-    // dontTouch(imm_s)
-    // dontTouch(imm_b)
-    // dontTouch(imm_u)
-    // dontTouch(imm_j)
+    dontTouch(imm_i)
+    dontTouch(imm_s)
+    dontTouch(imm_b)
+    dontTouch(imm_u)
+    dontTouch(imm_j)
     val imm_type = decodeResult(ImmType)
-    // dontTouch(imm_type)
+    dontTouch(imm_type)
 
-    ioMUX.imm := MuxLookup(imm_type, 0.U)(
+    ioMUX.imm := MuxLookup(imm_type.asUInt, 0.U)(
         Seq(
-            ImmTypeEnum.immNone  -> 0.U,
-            ImmTypeEnum.immI    -> imm_i,
-            ImmTypeEnum.immS    -> imm_s,
-            ImmTypeEnum.immB    -> imm_b,
-            ImmTypeEnum.immU    -> imm_u,
-            ImmTypeEnum.immJ    -> imm_j
+            ImmTypeEnum.immNone.asUInt  -> 0.U,
+            ImmTypeEnum.immI.asUInt    -> imm_i,
+            ImmTypeEnum.immS.asUInt    -> imm_s,
+            ImmTypeEnum.immB.asUInt    -> imm_b,
+            ImmTypeEnum.immU.asUInt    -> imm_u,
+            ImmTypeEnum.immJ.asUInt    -> imm_j
     ))
     
     ioGPR.src1 := IMEMio.inst_data(19, 15)
     ioGPR.src2 := IMEMio.inst_data(24, 20)
+    // ioGPR.src1 := Mux(rdSrc1, IMEMio.inst_data(19, 15), 0.U)
+    // ioGPR.src2 := Mux(rdSrc2, IMEMio.inst_data(24, 20), 0.U)
     ioGPR.rd   := IMEMio.inst_data(11, 7)
-    ioGPR.wen  := decodeResult(GenWen)
+    ioGPR.wen  := decodeResultGen(GenWen)
 }
