@@ -44,15 +44,15 @@ class DMEM_d extends Module {
     dmem.io.raddr := ALUio.res_addr
     dmem.io.men := IDUio.menslct
     dmem.io.mwen := IDUio.mwen
-    val lbSext = Cat(Fill(56, dmem.io.rdata(7)), dmem.io.rdata(7,0))
-    val lhSext = Cat(Fill(48, dmem.io.rdata(15)), dmem.io.rdata(15,0))
-    val lwSext = Cat(Fill(32, dmem.io.rdata(31)), dmem.io.rdata(31,0))
+    val lbExt = Cat(Fill(56, Mux(IDUio.extSign, dmem.io.rdata(7 ), 0.U)), dmem.io.rdata(7 ,0))
+    val lhExt = Cat(Fill(48, Mux(IDUio.extSign, dmem.io.rdata(15), 0.U)), dmem.io.rdata(15,0))
+    val lwExt = Cat(Fill(32, Mux(IDUio.extSign, dmem.io.rdata(31), 0.U)), dmem.io.rdata(31,0))
 
-    ioMUX.rdata := MuxLookup(IDUio.sextPos, dmem.io.rdata)(
+    ioMUX.rdata := MuxLookup(IDUio.extPos, dmem.io.rdata)(
         Seq(
-            0.U -> lbSext,
-            1.U -> lhSext,
-            2.U -> lwSext,
+            0.U -> lbExt,
+            1.U -> lhExt,
+            2.U -> lwExt,
             3.U -> dmem.io.rdata
         )
     )
