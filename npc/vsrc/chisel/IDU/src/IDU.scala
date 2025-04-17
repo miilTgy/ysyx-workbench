@@ -182,21 +182,38 @@ object GenWriteMask extends DecodeField[Insn, UInt] {
     }
 }
 
-object GenSextPos extends DecodeField[Insn, UInt] {
+object GenDMEMExtPos extends DecodeField[Insn, UInt] {
     override def name = "gen sext pos"
 
     override def chiselType = UInt(2.W)
 
     override def genTable(i: Insn): BitPat = i.inst.name match {
             case "lb"   => BitPat(0.U(2.W))
+            case "lbu"  => BitPat(0.U(2.W))
             case "lh"   => BitPat(1.U(2.W))
+            case "lhu"  => BitPat(1.U(2.W))
             case "lw"   => BitPat(2.U(2.W))
+            case "lwu"  => BitPat(2.U(2.W))
             case "ld"   => BitPat(3.U(2.W))
             case _      => BitPat(3.U(2.W))
     }
 }
 
-object GenAluSext extends DecodeField[Insn, Bool] {
+object DMEMExtSign extends BoolDecodeField[Insn] {
+    override def name = "dmem ext sign"
+
+    val SignSeq = Seq("lb", "lh", "lw", "ld")
+    
+    override def genTable(i: Insn): BitPat = {
+        if (SignSeq.contains(i.inst.name)) {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
+object GenAluSext extends BoolDecodeField[Insn] {
     override def name = "gen alu sext"
 
     val AluSextSeq: Seq[String] = Seq(
@@ -327,9 +344,10 @@ class IDU extends Module {
     ioALU.Sext := decodeResult(GenAluSext)
     ioJMP.jmpslct    := decodeResult(JMPslct)
     ioDMEM.menslct   := decodeResult(memEnslct)
-    ioDMEM.mwen      := decodeResult(GenMwen)
-    ioDMEM.wmask     := decodeResult(GenWriteMask)
-    ioDMEM.sextPos    := decodeResult(GenSextPos)
+    ioDMEM.mwen      := decodeResultGen(GenMwen)
+    ioDMEM.wmask     := decodeResultGen(GenWriteMask)
+    ioDMEM.extPos    := decodeResultGen(GenDMEMExtPos)
+    ioDMEM.extSign   := decodeResult(DMEMExtSign)
 
     val imm_i    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 20))                                                       // I-type
     val imm_s    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 25), IMEMio.inst_data(11, 7))                              // S-type
