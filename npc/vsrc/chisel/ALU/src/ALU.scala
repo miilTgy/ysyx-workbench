@@ -41,9 +41,25 @@ class ALU extends Module {
     val sllRes = MUXio.data1 << MUXio.data2(5,0)
     val srlRes = MUXio.data1 >> MUXio.data2(5,0)
     val sraRes = (MUXio.data1.asSInt >> MUXio.data2(5,0)).asUInt
-    val mulRes = /* IDUio.data1 * IDUio.data2 */ 0.U
-    val divRes = /* IDUio.data1 / IDUio.data2 */ 0.U
-    val remRes = /* IDUio.data1 % IDUio.data2 */ 0.U
+        val sllwLow = Wire(UInt(32.W))
+        val sllwHigh = Wire(UInt(32.W))
+        sllwLow := MUXio.data1(31, 0) << MUXio.data2(4,0)
+        sllwHigh := MUXio.data1(63, 32)
+    val sllwRes = Cat(sllwHigh, sllwLow)
+        val srlwLow = Wire(UInt(32.W))
+        val srlwHigh = Wire(UInt(32.W))
+        srlwLow := MUXio.data1(31, 0) >> MUXio.data2(4,0)
+        srlwHigh := MUXio.data1(63, 32)
+    val srlwRes = Cat(srlwHigh, srlwLow)
+        val srawLow = Wire(UInt(32.W))
+        val srawHigh = Wire(UInt(32.W))
+        srawLow := (MUXio.data1(31, 0).asSInt >> MUXio.data2(4,0)).asUInt
+        srawHigh := MUXio.data1(63, 32)
+    val srawRes = Cat(srawHigh, srawLow)
+    val mulRes = MUXio.data1 * MUXio.data2 /* 0.U */
+    // dontTouch(mulRes)
+    val divRes = MUXio.data1 / MUXio.data2 /* 0.U */
+    val remRes = MUXio.data1 % MUXio.data2 /* 0.U */
 
     val (aluopDecoded: aluop.AluOp.Type, valid: Bool) = aluop.AluOp.safe(IDUio.aluop)
     assert(valid, "ALU.scala: aluop decode result may be invalid");
