@@ -26,7 +26,7 @@ object aluD1slct extends BoolDecodeField[Insn] {
     override def name = "src1 or pc select mux ctrl"
 
     override def genTable(i: Insn): BitPat = {
-        if (i.inst.name == "auipc" || Utils.isJ(i.inst)) {
+        if (i.inst.name == "auipc" || Utils.isJ(i.inst) || i.inst.name == "jalr") {
             BitPat(true.B)
         } else {
             BitPat(false.B)
