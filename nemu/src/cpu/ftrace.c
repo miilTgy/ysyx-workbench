@@ -5,6 +5,8 @@
 #include <utils.h> 
 #include "../monitor/sdb/sdb.h"
 
+#ifdef CONFIG_FTRACE
+
 typedef struct fnode {
     vaddr_t addr;
     size_t size;
@@ -68,5 +70,5 @@ void display_all_f() {
         node = node->nextf;
     }
 }
-
+#endif
 #endif
