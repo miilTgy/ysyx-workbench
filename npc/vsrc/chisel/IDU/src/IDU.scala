@@ -121,6 +121,7 @@ object GenSub extends BoolDecodeField[Insn] {
 
     override def genTable(i: Insn): BitPat = {
         if (aluop.AluOpMap.SubSeq.contains(i.inst.name) ||
+            aluop.AluOpMap.unSubSeq.contains(i.inst.name) ||
             aluop.AluOpMap.BeqSeq.contains(i.inst.name) ||
             aluop.AluOpMap.BneSeq.contains(i.inst.name) ||
             aluop.AluOpMap.BltSeq.contains(i.inst.name) ||
