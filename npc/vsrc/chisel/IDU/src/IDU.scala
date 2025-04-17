@@ -199,11 +199,9 @@ object GenSextPos extends DecodeField[Insn, UInt] {
 object GenAluSext extends DecodeField[Insn, Bool] {
     override def name = "gen alu sext"
 
-    override def chiselType = Bool()
-
     val AluSextSeq: Seq[String] = Seq(
         "addiw", "slliw", "srliw", "sraiw",
-        "addw", "sllw", "srlw", "sraw",
+        "addw", "subw", "sllw", "srlw", "sraw",
         "mulw", "divw", "divuw", "remw", "remuw"
     )
 
