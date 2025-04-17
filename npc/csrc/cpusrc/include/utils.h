@@ -26,18 +26,15 @@ uint32_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 
 // host_read(void *addr, int len);
 static inline uint64_t host_read(void *addr, int len) {
-    return *(uint32_t *) addr;
+    return *(uint64_t *) addr;
 }
 // host_write(void *addr, int len, uint64_t data);
 static inline void host_write(void *addr, int len, uint64_t data) {
-    printf("data = %16lx\n", data);
     switch (len) {
     case 1: *(uint8_t *)addr = data; return;
     case 2: *(uint16_t *)addr = data; return;
     case 4: *(uint32_t *)addr = data; return;
-    case 8: *(uint32_t *)addr = (uint32_t) data;
-            *(uint32_t *)(addr + 4) = (uint32_t) (data >> 32);
-            return;
+    case 8: *(uint64_t *)addr = data; return;
     default: printf("%s[HIT] illegal write addr%s\n", ANSI_BG_RED, ANSI_NONE); npc_state = NPC_ABORT; break;
     }
 }
