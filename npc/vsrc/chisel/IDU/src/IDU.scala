@@ -148,7 +148,7 @@ object GenWen extends BoolDecodeField[Insn] {
 object GenAluOp extends DecodeField[Insn, UInt] {
     override def name = "gen alu op"
 
-    override def chiselType = UInt(4.W)
+    override def chiselType = UInt((AluOp.ADDSUB.getWidth).W)
 
     override def genTable(op: Insn): BitPat = {
         val aluOp = aluop.AluOpMap.getAluOp(op.inst.name)
@@ -171,7 +171,7 @@ object GenMwen extends BoolDecodeField[Insn] {
 object GenWriteMask extends DecodeField[Insn, UInt] {
     override def name = "gen write mask"
 
-    override def chiselType = UInt(9.W)
+    override def chiselType = UInt(8.W)
 
     override def genTable(i: Insn): BitPat = i.inst.name match {
         case "sb"   => BitPat("b00000001".U(8.W))
@@ -261,7 +261,7 @@ object ImmType extends DecodeField[Insn, ImmTypeEnum.Type] {
 }
 
 class IOALU extends Bundle {
-    val aluop = Output(UInt(4.W))
+    val aluop = Output(UInt(5.W))
     val sub = Output(Bool())
     val condReslct = Output(Bool())
     val Sext = Output(Bool())
