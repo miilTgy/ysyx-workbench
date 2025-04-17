@@ -326,22 +326,35 @@ class IDU extends Module {
 
 
     /* 很玄学的bug：当 ImmType 放在 Seq 中最后一位时，会导致 decodeResult 的值错误！ */
-    val decodeTable = new DecodeTable(rv32imInstList, Seq(
-        ImmType, aluD1slct, aluD2slct, memEnslct, JMPslct, PCInc4slct, PCSrcslct, CondReslct,
-        GenSub, GenWen, GenAluOp, GenSextPos, GenAluSext,
-        GenMwen, GenWriteMask
+    val decodeTable = new DecodeTable(rv32imInstList,
+    Seq(
+        ImmType, aluD1slct, aluD2slct, memEnslct,
+        JMPslct, PCInc4slct, PCSrcslct, CondReslct, DMEMExtSign
         ))
 
+    val decodeTableGen = new DecodeTable(rv32imInstList,
+    Seq(
+        GenAluOp, GenSub, GenWen, GenAluSext, GenWriteMask,
+        GenDMEMExtPos, GenMwen
+    ))
     val decodeResult = decodeTable.decode(IMEMio.inst_data)
+    val decodeResultGen = decodeTableGen.decode(IMEMio.inst_data)
+
+    // val rdSrc1 = Wire(Bool())
+    // rdSrc1 := decodeResult(GenSrc1)
+    // val rdSrc2 = Wire(Bool())
+    // rdSrc2 := decodeResult(GenSrc2)
+    // dontTouch(rdSrc1)
+    // dontTouch(rdSrc2)
 
     ioMUX.alud1slct  := decodeResult(aluD1slct)
     ioMUX.alud2slct  := decodeResult(aluD2slct)
     ioMUX.pcInc4slct := decodeResult(PCInc4slct)
     ioMUX.pcsrcslct := decodeResult(PCSrcslct)
-    ioALU.aluop      := decodeResult(GenAluOp)
-    ioALU.sub := decodeResult(GenSub)
+    ioALU.aluop      := decodeResultGen(GenAluOp)
+    ioALU.sub := decodeResultGen(GenSub)
     ioALU.condReslct := decodeResult(CondReslct)
-    ioALU.Sext := decodeResult(GenAluSext)
+    ioALU.Sext := decodeResultGen(GenAluSext)
     ioJMP.jmpslct    := decodeResult(JMPslct)
     ioDMEM.menslct   := decodeResult(memEnslct)
     ioDMEM.mwen      := decodeResultGen(GenMwen)
