@@ -6,7 +6,7 @@ extern "C" int pimem_read(unsigned long long paddr) {
     int len = 4;
     uint64_t ret = 0;
     if (in_pmem(paddr)) {
-        ret = host_read(guest_to_host(paddr), len);
+        ret = (uint32_t) host_read(guest_to_host(paddr), len);
     } else {
         printf("%s[HIT] IMEM out of bound at pc = 0x%lx%s\n", ANSI_BG_RED, TB(DUT(io_pc)), ANSI_NONE);
     }
@@ -16,21 +16,10 @@ extern "C" int pimem_read(unsigned long long paddr) {
     return ret;
 }
 
-extern "C" unsigned int pmem_read_low(unsigned long long raddr) {
+extern "C" unsigned long long pmem_read(unsigned long long raddr) {
     if (in_pmem(raddr)) {
-        // std::cout << "load low addr 0x" << std::hex << raddr << " data " << *(uint32_t *) (pmem + raddr - CONFIG_MBASE) << std::dec << std::endl;
-        return host_read(guest_to_host(raddr), 4);
-    } else {
-        printf("%s[HIT] PMEM out of bound at pc = 0x%lx%s\n", ANSI_BG_RED, TB(DUT(io_pc)), ANSI_NONE);
-        if (TB(DUT(io_pc)) > CONFIG_MBASE && TB(DUT(io_pc)) < CONFIG_MSIZE + CONFIG_MSIZE)
-            npc_state = NPC_ABORT;
-    }
-    return 0;
-}
-extern "C" unsigned int pmem_read_high(unsigned long long raddr) {
-    if (in_pmem(raddr)) {
-        // std::cout << "load high addr 0x" << std::hex << raddr << " data " << *(uint32_t *) (pmem + raddr - CONFIG_MBASE) << std::dec << std::endl;
-        return host_read(guest_to_host(raddr), 4);
+        // std::cout << "load low addr 0x" << std::hex << raddr << " data " << *(uint64_t *) (pmem + raddr - CONFIG_MBASE) << std::dec << std::endl;
+        return host_read(guest_to_host(raddr), 8);
     } else {
         printf("%s[HIT] PMEM out of bound at pc = 0x%lx%s\n", ANSI_BG_RED, TB(DUT(io_pc)), ANSI_NONE);
         if (TB(DUT(io_pc)) > CONFIG_MBASE && TB(DUT(io_pc)) < CONFIG_MSIZE + CONFIG_MSIZE)
@@ -39,10 +28,9 @@ extern "C" unsigned int pmem_read_high(unsigned long long raddr) {
     return 0;
 }
 
-extern "C" void pmem_write(unsigned long long waddr, unsigned int wdata_low, unsigned int wdata_high, unsigned char wmask) {
+extern "C" void pmem_write(unsigned long long waddr, unsigned long long wdata, unsigned char wmask) {
     int len = 0;
-    uint64_t data = (((uint64_t) wdata_high) << 32) | wdata_low;
-    printf("store addr 0x%016llx data %016lx\n", waddr, data);
+    uint64_t data = wdata;
     switch (wmask) {
         case 0x01: len = 1; data = data & 0x00000000000000ff; break;
         case 0x03: len = 2; data = data & 0x000000000000ffff; break;
@@ -50,6 +38,7 @@ extern "C" void pmem_write(unsigned long long waddr, unsigned int wdata_low, uns
         case 0xff: len = 8; data = data & 0xffffffffffffffff; break;
         default: len = 0; break;
     }
+    // printf("store addr 0x%016llx len %02x data %016lx\n", waddr, len, data);
     if (in_pmem(waddr)) {
         host_write(guest_to_host(waddr), len, data);
         // printf("after store, mem@0x%016llx = %016lx\n", waddr, *(uint64_t *) (pmem + waddr - CONFIG_MBASE));
