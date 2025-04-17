@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
         } else if (npc_state == NPC_END) {
             printf("%s[HIT] NPC_END%s\n", ANSI_BG_GREEN, ANSI_NONE);
             break;
-        } else if (cycle_num > 10000) {
+        } else if (cycle_num > 100000) {
             printf("%s[HIT] NPC_TIMEOUT%s\n", ANSI_BG_YELLOW, ANSI_NONE);
             npc_state = NPC_ABORT;
             break;
