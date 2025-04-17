@@ -275,7 +275,8 @@ class IODMEM extends Bundle {
     val menslct = Output(Bool())
     val mwen   = Output(Bool())
     val wmask   = Output(UInt(8.W))
-    val sextPos = Output(UInt(2.W))
+    val extPos = Output(UInt(2.W))
+    val extSign = Output(Bool())
 }
 
 class IOWBU extends Bundle {
