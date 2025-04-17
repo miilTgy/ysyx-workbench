@@ -1,6 +1,6 @@
 include $(AM_HOME)/scripts/isa/riscv.mk
 include $(AM_HOME)/scripts/platform/npc.mk
-# COMMON_CFLAGS += -march=rv64im -mabi=lp64 -mno-div
+COMMON_CFLAGS += -march=rv64i_zicsr -mabi=lp64 -mno-div
 
 AM_SRCS += riscv/npc/libgcc/div.S \
            riscv/npc/libgcc/muldi3.S \
