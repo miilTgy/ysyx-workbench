@@ -56,6 +56,7 @@ word_t map_read(paddr_t addr, int len, IOMap *map) {
   assert(len >= 1 && len <= 8);
   check_bound(map, addr);
   paddr_t offset = addr - map->low;
+  IFDEF(CONFIG_DTRACE, Log("read %d bytes at offset 0x%08x in map "ANSI_FG_RED"%s"ANSI_FG_BLUE, len, offset, map->name);)
   invoke_callback(map->callback, offset, len, false); // prepare data to read
   word_t ret = host_read(map->space + offset, len);
   return ret;
@@ -65,6 +66,7 @@ void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   assert(len >= 1 && len <= 8);
   check_bound(map, addr);
   paddr_t offset = addr - map->low;
+  IFDEF(CONFIG_DTRACE, Log("write %d bytes at offset 0x%08x in map "ANSI_FG_RED"%s"ANSI_FG_BLUE" with data 0x%016lx", len, offset, map->name, data);)
   host_write(map->space + offset, len, data);
   invoke_callback(map->callback, offset, len, true);
 }
