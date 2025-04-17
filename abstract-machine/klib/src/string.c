@@ -97,11 +97,24 @@ void *memset(void *s, int c, size_t n) {
 }
 
 void *memmove(void *dst, const void *src, size_t n) {
-  panic("Not implemented");
+  assert(dst != NULL && src != NULL);
+  if ((char *)dst >= (char *)src && (char *)dst < (char *)src + n) {
+    // Overlapping, from back to front
+    for (size_t i = n; i > 0; i--) {
+      *((char *)dst + i - 1) = *((char *)src + i - 1);
+    }
+  } else {
+    return memcpy(dst, src, n);
+  }
+  return dst;
 }
 
 void *memcpy(void *out, const void *in, size_t n) {
-  panic("Not implemented");
+  assert(out != NULL && in != NULL);
+  for (size_t i = 0; i < n; i++) {
+    *((char *)out + i) = *((char *)in + i);
+  }
+  return out;
 }
 
 int memcmp(const void *s1, const void *s2, size_t n) {
