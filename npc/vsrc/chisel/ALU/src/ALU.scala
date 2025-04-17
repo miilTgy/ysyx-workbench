@@ -63,11 +63,14 @@ class ALU extends Module {
 
     val (aluopDecoded: aluop.AluOp.Type, valid: Bool) = aluop.AluOp.safe(IDUio.aluop)
     assert(valid, "ALU.scala: aluop decode result may be invalid");
+    dontTouch(aluopDecoded)
 
-    ioDMEMUX.res_addr := MuxLookup(aluopDecoded, 0.U)(
+    val ResPreSext = MuxLookup(aluopDecoded, 0.U)(
         Seq(
-            AluOp.ADD -> addsubRes,
-            AluOp.SUB -> addsubRes,
+            // AluOp.ADD -> addsubRes,
+            AluOp.ADDSUB -> addsubRes,
+            AluOp.UNSUB -> addsubRes,
+            // AluOp.SUB -> addsubRes,
             AluOp.XOR -> xorRes,
             AluOp.OR  -> orRes,
             AluOp.AND -> andRes,
@@ -80,8 +83,14 @@ class ALU extends Module {
             AluOp.BEQ -> addsubRes,
             AluOp.BNE -> addsubRes,
             AluOp.BLT -> addsubRes,
-            AluOp.BGE -> addsubRes
+            AluOp.BGE -> addsubRes,
+            AluOp.SLLW -> sllwRes,
+            AluOp.SRLW -> srlwRes,
+            AluOp.SRAW -> srawRes,
+            AluOp.D2PASS -> MUXio.data2
     ))
+    dontTouch(ResPreSext)
+        ioDMEMUX.res_addr := Mux(IDUio.Sext, Cat(Fill(32, ResPreSext(31)), ResPreSext(31, 0)), ResPreSext)
 
     val branchRes = MuxLookup(aluopDecoded, 0.B)(
         Seq(

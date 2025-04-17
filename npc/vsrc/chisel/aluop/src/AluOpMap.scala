@@ -4,9 +4,10 @@ import chisel3._
 import chisel3.util._
 
 object AluOp extends ChiselEnum {
-  val ADD, SUB, XOR, OR, AND,
+  val ADDSUB, UNSUB, XOR, OR, AND,
   SLL, SLR, SRA, MUL, DIV, REM,
-  BEQ, BNE, BLT, BGE = Value
+  BEQ, BNE, BLT, BGE,
+  SLLW, SRLW, SRAW, D2PASS = Value
 }
 
 object AluOpMap {
@@ -16,11 +17,14 @@ object AluOpMap {
     "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu",
     "sb", "sh", "sw", "sd",
     "add", "addw",
-    "fence", "ebreak", "jalr", "jal", "lui", "ecall"
+    "fence", "ebreak", "jalr", "jal", "ecall"
   )
   val SubSeq : Seq[String] = Seq(
-    "slti", "sltiu", "slt", "sltu",
+    "slti", "slt",
     "sub", "subw"
+  )
+  val unSubSeq : Seq[String] = Seq(
+    "sltiu", "sltu",
   )
   val XorSeq : Seq[String] = Seq(
     "xori", "xor"
@@ -32,13 +36,13 @@ object AluOpMap {
     "andi", "and"
   )
   val SllSeq : Seq[String] = Seq(
-    "slli", "slliw", "sllw", "sll"
+    "slli", "sll"
   )
   val SrlSeq : Seq[String] = Seq(
-    "srli", "srl", "srliw", "srlw"
+    "srli", "srl"
   )
   val SraSeq : Seq[String] = Seq(
-    "srai", "sra", "sraiw", "sraw"
+    "srai", "sra"
   )
   val MulSeq : Seq[String] = Seq(
     "mul", "mulh", "mulhsu", "mulhu", "mulw"
@@ -61,11 +65,24 @@ object AluOpMap {
   val BgeSeq : Seq[String] = Seq(
     "bge", "bgeu"
   )
+  val SllwSeq : Seq[String] = Seq(
+    "slliw", "sllw"
+  )
+  val SrlwSeq : Seq[String] = Seq(
+    "srliw", "srlw"
+  )
+  val SrawSeq : Seq[String] = Seq(
+    "sraiw", "sraw"
+  )
+  val D2PassSeq : Seq[String] = Seq(
+    "lui"
+  )
 
   // 转换函数
   def getAluOp(mnemonic: String): AluOp.Type = mnemonic match {
-    case m if AddSeq.contains(m) => AluOp.ADD
-    case m if SubSeq.contains(m) => AluOp.SUB
+    case m if AddSeq.contains(m) => AluOp.ADDSUB
+    case m if SubSeq.contains(m) => AluOp.ADDSUB
+    case m if unSubSeq.contains(m) => AluOp.UNSUB
     case m if XorSeq.contains(m) => AluOp.XOR
     case m if OrSeq.contains(m)  => AluOp.OR
     case m if AndSeq.contains(m) => AluOp.AND
@@ -79,6 +96,10 @@ object AluOpMap {
     case m if BneSeq.contains(m) => AluOp.BNE
     case m if BltSeq.contains(m) => AluOp.BLT
     case m if BgeSeq.contains(m) => AluOp.BGE
+    case m if SllwSeq.contains(m) => AluOp.SLLW
+    case m if SrlwSeq.contains(m) => AluOp.SRLW
+    case m if SrawSeq.contains(m) => AluOp.SRAW
+    case m if D2PassSeq.contains(m) => AluOp.D2PASS
     case _ => throw new IllegalArgumentException(s"Unknown mnemonic: $mnemonic")
   }
 }
