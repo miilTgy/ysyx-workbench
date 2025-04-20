@@ -15,7 +15,6 @@ NPC_STATE npc_state = NPC_RUNNING;
 #define CONFIG_MSIZE 0x8000000
 
 // Addr conversion
-#define CONFIG_MBASE 0x80000000
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 
 static inline bool in_pmem(uint32_t addr) {
