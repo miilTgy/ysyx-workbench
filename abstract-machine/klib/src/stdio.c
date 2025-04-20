@@ -53,7 +53,31 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
         }
         d += cnt;
         break;
-      default: break;
+      case 'x':
+        int numx = va_arg(ap, int);
+        if (numx < 0) {
+          *d = '-';
+          d++;
+          numx = -numx;
+        }
+        int cntx = 0, numx_tmp = numx;
+        while (numx_tmp != 0) {
+          numx_tmp /= 16;
+          cntx++;
+        }
+        for (size_t i = 0; i < cntx; i++) {
+          int digit = numx % 16;
+          numx /= 16;
+          // printf("no.%d digit: %d\n", i, digit);
+          if (digit < 10) {
+            d[cntx - i - 1] = 48 + digit;
+          } else {
+            d[cntx - i - 1] = 65 - 10 + digit;
+          }
+        }
+        d += cntx;
+        break;
+      default: /* panic("vsprintf not implented yet!!!"); */ break;
       }
     }
   }
