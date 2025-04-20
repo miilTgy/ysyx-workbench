@@ -4,6 +4,7 @@
 #include "common.h"
 #include "debug.h"
 #include "isa-def.h"
+#include "devices/timer.h"
 
 // Create NPE State
 enum NPC_STATE { NPC_END, NPC_ABORT, NPC_RUNNING };

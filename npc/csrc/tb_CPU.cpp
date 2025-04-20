@@ -92,6 +92,9 @@ int main(int argc, char *argv[]) {
     int cycle_num = 0;
     set_cpu();
     ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+    #endif
+    std::cout << "[OK] copy regs to ref" << std::endl;
+    init_rtc();
     while (npc_state != NPC_END) {
         cycle_num ++;
         // std::cout << "cycle_num " << cycle_num
