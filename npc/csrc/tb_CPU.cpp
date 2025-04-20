@@ -130,8 +130,11 @@ int main(int argc, char *argv[]) {
     // TB(cycles(1));
     
     TB(~TESTBENCH());
+    std::cout << "[OK] SIM end" << std::endl;
+
     if (npc_state == NPC_END)
         exit(EXIT_SUCCESS);
     else
         exit(EXIT_FAILURE);
+    exit(EXIT_SUCCESS);
 }
