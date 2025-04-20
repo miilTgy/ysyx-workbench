@@ -20,10 +20,21 @@ extern "C" unsigned long long pmem_read(unsigned long long raddr) {
     if (in_pmem(raddr)) {
         // std::cout << "load low addr 0x" << std::hex << raddr << " data " << *(uint64_t *) (pmem + raddr - CONFIG_MBASE) << std::dec << std::endl;
         return host_read(guest_to_host(raddr), 8);
+    } else if (raddr == CONFIG_RTC_MMIO) {
+        // std::cout << "visit RTC at pc=0x" << std::hex << TB(DUT(io_pc)) << std::dec << std::endl;
+        #ifdef CONFIG_DIFFTEST
+        difftest_skip_ref();
+        #endif
+        return get_time() - soc_start_time;
+    } else if (raddr == CONFIG_SERIAL_MMIO) {
+        // std::cout << "read serial at pc=0x" << std::hex << TB(DUT(io_pc)) << std::dec << std::endl;
+        #ifdef CONFIG_DIFFTEST
+        difftest_skip_ref();
+        #endif
     } else {
-        printf("%s[HIT] PMEM out of bound at pc = 0x%lx%s\n", ANSI_BG_RED, TB(DUT(io_pc)), ANSI_NONE);
-        if (TB(DUT(io_pc)) > CONFIG_MBASE && TB(DUT(io_pc)) < CONFIG_MSIZE + CONFIG_MSIZE)
-            npc_state = NPC_ABORT;
+        printf("%s[HIT] RD PMEM addr=0x%08llx out of bound at pc = 0x%lx%s\n", ANSI_BG_RED, raddr, TB(DUT(io_pc)), ANSI_NONE);
+        // if (TB(DUT(io_pc)) > CONFIG_MBASE && TB(DUT(io_pc)) < CONFIG_MSIZE + CONFIG_MSIZE)
+        npc_state = NPC_ABORT;
     }
     return 0;
 }
@@ -42,8 +53,15 @@ extern "C" void pmem_write(unsigned long long waddr, unsigned long long wdata, u
     if (in_pmem(waddr)) {
         host_write(guest_to_host(waddr), len, data);
         // printf("after store, mem@0x%016llx = %016lx\n", waddr, *(uint64_t *) (pmem + waddr - CONFIG_MBASE));
+    } else if (waddr == CONFIG_SERIAL_MMIO) {
+        // std::cout << "write serial data " << std::endl;
+        #ifdef CONFIG_DIFFTEST
+        difftest_skip_ref();
+        #endif
+        // std::cout << "pc=0x" << std::hex << TB(DUT(io_pc)) << std::dec << " write serial data " << (uint8_t) data << std::endl;
+        putchar((uint8_t) data);
     } else {
-        printf("%s[HIT] PMEM out of bound at pc = 0x%lx%s\n", ANSI_BG_RED, TB(DUT(io_pc)), ANSI_NONE);
+        printf("%s[HIT] WR PMEM addr=0x%08llx out of bound at pc = 0x%lx%s\n", ANSI_BG_RED, waddr, TB(DUT(io_pc)), ANSI_NONE);
         npc_state = NPC_ABORT;
     }
 }
