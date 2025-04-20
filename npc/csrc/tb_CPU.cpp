@@ -105,6 +105,12 @@ int main(int argc, char *argv[]) {
         // << std::dec << std::endl;
         set_cpu();
         TB(cycles(1));
+        // std::cout << "pc=0x" << std::hex << TB(DUT(io_pc)) << std::dec << std::endl;
+        // if (TB(DUT(io_pc)) == 0x8000025c){
+        //     npc_state = NPC_ABORT;
+        //     TB(cycles(1));
+        // } // [x] breakpoint
+
         if (npc_state == NPC_ABORT) {
             printf("%s[HIT] NPC_ABORT%s\n", ANSI_BG_RED, ANSI_NONE);
             break;
