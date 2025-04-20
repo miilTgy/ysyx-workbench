@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-04-10 16:18:26
+ * @LastEditTime: 2025-04-20 21:11:14
  * @FilePath: /npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -13,6 +13,7 @@
 #define __TB_COM__
 
 #define NDEBUG
+// #define CONFIG_WAVE
 
 #include <stdlib.h>
 #include <iostream>
@@ -73,11 +74,19 @@ public:
     TESTBENCH_BASE(int argc, char *argv[]) {
         std::cout << "start constructiog" << std::endl;
         contextp = new VerilatedContext;
+
+        #ifdef CONFIG_WAVE
         contextp->traceEverOn(true);
+        #endif
+
         contextp->commandArgs(argc, argv);
         __DUT__ = new MODULE;
+        
+        #ifdef CONFIG_WAVE
         m_trace = new VerilatedVcdC;
+        #endif
 
+        #ifdef CONFIG_WAVE
         __DUT__->trace(m_trace, 5);
         std::string module_name = typeid(MODULE).name();
         std::cout << module_name << std::endl;
@@ -85,6 +94,7 @@ public:
         std::cout << "traceEverOn" << std::endl;
         m_trace->open(module_name.c_str());
         std::cout << "Open Wave File " << module_name << std::endl;
+        #endif
     }
 
     /**
@@ -92,11 +102,15 @@ public:
      * @return {*}
      */
     ~TESTBENCH_BASE(void) {
-        std::cout << "sim finished." << std::endl;
+        std::cout << "~TESTBENCH_BASE: sim finished." << std::endl;
+        #ifdef CONFIG_WAVE
         m_trace->close();
+        std::cout << "Closed Wave File" << std::endl;
         delete m_trace;
-        delete __DUT__;
+        std::cout << "Deleted Wave File" << std::endl;
+        #endif
         delete contextp;
+        std::cout << "Deleted contextp" << std::endl;
     }
 
     /**
@@ -120,10 +134,12 @@ public:
      */
     void inline check_eq(uint64_t a, uint64_t b) {
         if (a != b) {
+            #ifdef CONFIG_WAVE
             m_trace->close();
             delete m_trace;
-            delete __DUT__;
+            #endif
             delete contextp;
+            delete __DUT__;
             std::cout << "Assertion at time="
             << contextp->time() << std::endl;
             assert(0);
@@ -143,13 +159,17 @@ public:
         codeBlock();
         this->__DUT__->eval();
         this->contextp->timeInc(1);
+        #ifdef CONFIG_WAVE
         this->m_trace->dump(this->contextp->time());
+        #endif
     }
 
     void inline init_comb(std::function<void()> codeBlock) {
         this->__DUT__->eval();
         codeBlock(); // Don't insert codeBlock when comb sim.
+        #ifdef CONFIG_WAVE
         this->m_trace->dump(this->contextp->time());
+        #endif
     }
 };
 
