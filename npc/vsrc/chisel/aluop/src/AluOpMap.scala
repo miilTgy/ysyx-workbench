@@ -6,7 +6,7 @@ import chisel3.util._
 object AluOp extends ChiselEnum {
   val ADDSUB, UNSUB, XOR, OR, AND,
   SLL, SLR, SRA, MUL, DIV, REM,
-  BEQ, BNE, BLT, BGE,
+  BEQ, BNE, BLT, BLTU, BGE, BGEU,
   SLLW, SRLW, SRAW, D2PASS = Value
 }
 
@@ -60,10 +60,16 @@ object AluOpMap {
     "bne"
   )
   val BltSeq : Seq[String] = Seq(
-    "blt", "bltu"
+    "blt"
+  )
+  val BltuSeq : Seq[String] = Seq(
+    "bltu"
   )
   val BgeSeq : Seq[String] = Seq(
-    "bge", "bgeu"
+    "bge"
+  )
+  val BgeuSeq : Seq[String] = Seq(
+    "bgeu"
   )
   val SllwSeq : Seq[String] = Seq(
     "slliw", "sllw"
@@ -95,7 +101,9 @@ object AluOpMap {
     case m if BeqSeq.contains(m) => AluOp.BEQ
     case m if BneSeq.contains(m) => AluOp.BNE
     case m if BltSeq.contains(m) => AluOp.BLT
+    case m if BltuSeq.contains(m) => AluOp.BLTU
     case m if BgeSeq.contains(m) => AluOp.BGE
+    case m if BgeuSeq.contains(m) => AluOp.BGEU
     case m if SllwSeq.contains(m) => AluOp.SLLW
     case m if SrlwSeq.contains(m) => AluOp.SRLW
     case m if SrawSeq.contains(m) => AluOp.SRAW

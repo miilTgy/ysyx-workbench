@@ -94,19 +94,23 @@ class ALU extends Module {
 
     val branchRes = MuxLookup(aluopDecoded, 0.B)(
         Seq(
-            AluOp.BEQ -> (addsubRes === 0.U),
-            AluOp.BNE -> (addsubRes =/= 0.U),
-            AluOp.BLT -> (Mux(IDUio.sub, addsubRes.asSInt < 0.S, addsubRes.asUInt < 0.U)),
-            AluOp.BGE -> (Mux(IDUio.sub, addsubRes.asSInt >= 0.S, addsubRes.asUInt >= 0.U))
+            AluOp.BEQ -> (MUXio.data1 === MUXio.data2),
+            AluOp.BNE -> (MUXio.data1 =/= MUXio.data2),
+            AluOp.BLT -> (MUXio.data1.asSInt < MUXio.data2.asSInt),
+            AluOp.BLTU -> (MUXio.data1.asUInt < MUXio.data2.asUInt),
+            AluOp.BGE -> (MUXio.data1.asSInt >= MUXio.data2.asSInt),
+            AluOp.BGEU -> (MUXio.data1.asUInt >= MUXio.data2.asUInt)
         )
     )
     dontTouch(branchRes)
     val branchOper = (IDUio.aluop === aluop.AluOp.BEQ.litValue.U((aluop.AluOp.getWidth).W)) ||
                      (IDUio.aluop === aluop.AluOp.BNE.litValue.U((aluop.AluOp.getWidth).W)) ||
                      (IDUio.aluop === aluop.AluOp.BLT.litValue.U((aluop.AluOp.getWidth).W)) ||
-                     (IDUio.aluop === aluop.AluOp.BGE.litValue.U((aluop.AluOp.getWidth).W))
+                     (IDUio.aluop === aluop.AluOp.BLTU.litValue.U((aluop.AluOp.getWidth).W)) ||
+                     (IDUio.aluop === aluop.AluOp.BGE.litValue.U((aluop.AluOp.getWidth).W)) ||
+                     (IDUio.aluop === aluop.AluOp.BGEU.litValue.U((aluop.AluOp.getWidth).W))
     dontTouch(branchOper)
 
-    ioJMP.jmpslct := ((IDUio.aluop === aluop.AluOp.ADDSUB.litValue.U((aluop.AluOp.getWidth).W)) && ~ IDUio.sub) ||
-                       (branchOper && branchRes)
+    ioJMP.jmpslct := ((IDUio.aluop === aluop.AluOp.ADDSUB.litValue.U((aluop.AluOp.getWidth).W)) && ~ IDUio.sub) || // jalr or jal
+                       (branchOper && branchRes) // branch oper
 }

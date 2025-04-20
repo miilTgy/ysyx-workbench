@@ -125,7 +125,9 @@ object GenSub extends BoolDecodeField[Insn] {
             aluop.AluOpMap.BeqSeq.contains(i.inst.name) ||
             aluop.AluOpMap.BneSeq.contains(i.inst.name) ||
             aluop.AluOpMap.BltSeq.contains(i.inst.name) ||
-            aluop.AluOpMap.BgeSeq.contains(i.inst.name)) {
+            aluop.AluOpMap.BltuSeq.contains(i.inst.name) ||
+            aluop.AluOpMap.BgeSeq.contains(i.inst.name) ||
+            aluop.AluOpMap.BgeuSeq.contains(i.inst.name)) {
             BitPat(true.B)
         } else {
             BitPat(false.B)
