@@ -119,12 +119,40 @@ static void checkregs(CPU_state *ref, CPU_state *dut, vaddr_t pc) {
     }
 }
 
+static bool is_skip_ref = false;
+static bool is_first_step_after_skip = false;
 void difftest_step(vaddr_t pc) {
-    ref_difftest_exec(1);
-    CPU_state ref;
-    ref_difftest_regcpy(&ref, DIFFTEST_TO_DUT);
-    set_cpu();
-    checkregs(&ref, &cpu, pc);
+    if (is_skip_ref) {
+        is_skip_ref = false;
+        is_first_step_after_skip = true;
+        // set_cpu();
+        // // cpu.pc = tb->dut->rootp->CPU__DOT____Vcellinp__ifu__MUXio_pcNext;
+        // // cpu.pc += 4;
+        // isa_reg_display();
+        // std::cout << "Skip ref: pc = " << std::hex << pc << std::endl;
+        // ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+        // std::cout << "[OK] reg copy end" << std::endl;
+    } else {
+        if (is_first_step_after_skip) {
+            is_first_step_after_skip = false;
+            set_cpu();
+            // isa_reg_display();
+            // std::cout << "Skip ref: pc = " << std::hex << pc << std::endl;
+            ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+            // std::cout << "[OK] reg copy end" << std::endl;
+        } else {
+            ref_difftest_exec(1);
+        }
+        CPU_state ref;
+        ref_difftest_regcpy(&ref, DIFFTEST_TO_DUT);
+        set_cpu();
+        checkregs(&ref, &cpu, pc);
+    }
+}
+
+void difftest_skip_ref() {
+    // std::cout << "Skip reference" << std::endl;
+    is_skip_ref = true;
 }
 
 #endif // CONFIG_DIFFTEST
