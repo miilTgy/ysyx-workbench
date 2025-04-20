@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
+#include <time.h>
 
 #include <assert.h>
 #include <stdlib.h>
