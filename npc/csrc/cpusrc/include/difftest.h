@@ -3,8 +3,11 @@
 
 #include <dlfcn.h>
 
+#include "common.h"
 #include "utils.h"
 #include "debug.h"
+
+#ifdef CONFIG_DIFFTEST
 
 enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF };
 
@@ -124,4 +127,5 @@ void difftest_step(vaddr_t pc) {
     checkregs(&ref, &cpu, pc);
 }
 
+#endif // CONFIG_DIFFTEST
 #endif

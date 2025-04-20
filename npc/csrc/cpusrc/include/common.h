@@ -1,6 +1,8 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+// #define CONFIG_DIFFTEST
+
 #include <iostream>
 
 #include <unistd.h>

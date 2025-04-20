@@ -125,11 +125,13 @@ void init_npc(int argc, char *argv[]) {
     /* Load the image to memory. This will overwrite the built-in image. */
     long img_size = load_img();
 
+#ifdef CONFIG_DIFFTEST
     /* Init difftest */
     if (diff_so_file != NULL) {
       std::cout << "difftest init" << std::endl;
       init_difftest(diff_so_file, img_size, difftest_port);
     }
+#endif
 }
 
 // Define cpu state

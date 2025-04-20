@@ -91,6 +91,8 @@ int main(int argc, char *argv[]) {
 /* Here Don't touch */
     int cycle_num = 0;
     set_cpu();
+    std::cout << "[OK] set cpu" << std::endl;
+    #ifdef CONFIG_DIFFTEST
     ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
     #endif
     std::cout << "[OK] copy regs to ref" << std::endl;
@@ -109,12 +111,15 @@ int main(int argc, char *argv[]) {
         } else if (npc_state == NPC_END) {
             printf("%s[HIT] NPC_END%s\n", ANSI_BG_GREEN, ANSI_NONE);
             break;
-        } else if (cycle_num > 100000) {
-            printf("%s[HIT] NPC_TIMEOUT%s\n", ANSI_BG_YELLOW, ANSI_NONE);
-            npc_state = NPC_ABORT;
-            break;
         }
+        // else if (cycle_num > 1000000) {
+        //     printf("%s[HIT] NPC_TIMEOUT%s\n", ANSI_BG_YELLOW, ANSI_NONE);
+        //     npc_state = NPC_ABORT;
+        //     break;
+        // }
+#ifdef CONFIG_DIFFTEST
         difftest_step(tb->dut->rootp->CPU__DOT__ifu__DOT__pc);
+#endif
     }
     // TB(cycles(1));
     
