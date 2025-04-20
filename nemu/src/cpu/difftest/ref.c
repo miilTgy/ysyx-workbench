@@ -31,8 +31,8 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
   if (direction == DIFFTEST_TO_REF) {
     for (size_t i = 0; i < 32; i++) {
       cpu.gpr[i] = ((CPU_state *) dut)->gpr[i];
-      extern const char *regs[];
-      printf("<reg_cpy> set regs %s to 0x%016lx\n", regs[i], cpu.gpr[i]);
+      // extern const char *regs[];
+      // printf("<reg_cpy> set regs %s to 0x%016lx\n", regs[i], cpu.gpr[i]);
     }
     cpu.pc = ((CPU_state *) dut)->pc;
     // isa_reg_display();
