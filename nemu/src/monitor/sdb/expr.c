@@ -204,7 +204,7 @@ word_t expr(char *e, bool *success) {
 
   /* TODO: Insert codes to evaluate the expression. */
   uint64_t answww = eval(0, nr_token-1);
-  printf("value: %lu\n", answww);// eval(0, nr_token-1);
+  // printf("value: %lu\n", answww);// eval(0, nr_token-1);
 
   return answww;
 }
