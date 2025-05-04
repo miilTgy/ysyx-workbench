@@ -121,14 +121,6 @@ class IDU extends Module {
         CSRWenslct
     ))
     val decodeResult = decodeTable.decode(IMEMio.inst_data)
-    val decodeResultGen = decodeTableGen.decode(IMEMio.inst_data)
-
-    // val rdSrc1 = Wire(Bool())
-    // rdSrc1 := decodeResult(GenSrc1)
-    // val rdSrc2 = Wire(Bool())
-    // rdSrc2 := decodeResult(GenSrc2)
-    // dontTouch(rdSrc1)
-    // dontTouch(rdSrc2)
 
     ioMUX.alud1slct  := decodeResult(aluD1slct)
     ioMUX.alud2slct  := decodeResult(aluD2slct)
@@ -170,8 +162,6 @@ class IDU extends Module {
     
     ioGPR.src1 := IMEMio.inst_data(19, 15)
     ioGPR.src2 := IMEMio.inst_data(24, 20)
-    // ioGPR.src1 := Mux(rdSrc1, IMEMio.inst_data(19, 15), 0.U)
-    // ioGPR.src2 := Mux(rdSrc2, IMEMio.inst_data(24, 20), 0.U)
     ioGPR.rd   := IMEMio.inst_data(11, 7)
     ioGPR.wen  := decodeResult(GenWen)
 }
