@@ -13,6 +13,7 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
+#include "isa-def.h"
 #include <dlfcn.h>
 
 #include <isa.h>
@@ -91,11 +92,32 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
   ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
 }
 
+riscv64_CPU_state refregs;
+extern const char *regs[];
+void ref_reg_display(riscv64_CPU_state refreg) {
+  int num = sizeof(refreg.gpr) / sizeof(refreg.gpr[0]);
+  for (int i = 0; i < num; i++) {
+    printf("Reg$\033[1;31m%-4s\033[m 0x%016lx\t", regs[i], refreg.gpr[i]);
+    if ((i + 1) % 3 == 0) {
+      putchar('\n');
+    }
+    
+  }
+  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "cpu.pc", refreg.pc);
+  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\t", "csr.mtvec", refreg.csr.mtvec);
+  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "csr.mepc", refreg.csr.mepc);
+  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\t", "csr.mstatus", refreg.csr.mstatus);
+  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "csr.mcause", refreg.csr.mcause);
+}
+
 static void checkregs(CPU_state *ref, vaddr_t pc) {
   if (!isa_difftest_checkregs(ref, pc)) {
     nemu_state.state = NEMU_ABORT;
     nemu_state.halt_pc = pc;
     isa_reg_display();
+    printf("Spike's regs:\n");
+    ref_difftest_regcpy(&refregs, DIFFTEST_TO_DUT);
+    ref_reg_display(refregs);
   }
 }
 

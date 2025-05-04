@@ -33,6 +33,10 @@ void isa_reg_display() {
     
   }
   printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "cpu.pc", cpu.pc);
+  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\t", "csr.mtvec", cpu.csr.mtvec);
+  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "csr.mepc", cpu.csr.mepc);
+  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\t", "csr.mstatus", cpu.csr.mstatus);
+  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "csr.mcause", cpu.csr.mcause);
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
@@ -40,6 +44,7 @@ word_t isa_reg_str2val(const char *s, bool *success) {
     if (strcmp(regs[i], (s+1)) == 0)
     {
       *success = true;
+      // printf("isa_ref_str2val hit %s 0x%016lx\n", regs[i], cpu.gpr[i]);
       return cpu.gpr[i];
     } else if (strcmp((s+1), "pc") == 0)
     {
