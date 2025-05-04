@@ -68,37 +68,57 @@ class IDU extends Module {
             
 
     val targetSets = Set("rv_i", "rv64_i", "rv_m", "rv64_m")
+    val csrSets = Set("rv_zicsr")
+    val csrInstSets = CSRInsts.csrInsts
+    val systemSets = Set("rv_system")
+    val systemInstSets = Set("mret")
 
     /* OutPut Inst Table Begin */
         val instTableOutputFile = new File("/home/miil/ysyx-workbench/npc/vsrc/chisel/InstSupported.md")
-        val rv32imInstListString = instTable
+        var rv32imInstListString = instTable
             .filter(instr => targetSets.contains(instr.instructionSet.name)) // filter Sets
             .filter(_.pseudoFrom.isEmpty)
-            // .filter(instr => instr.args.exists(_.name.contains("imm")))
+            
+        val rvcsrInstListString = instTable
+            .filter(instr => csrSets.contains(instr.instructionSet.name) && csrInstSets.contains(instr.name))
+            .filter(_.pseudoFrom.isEmpty)
+
+        val rvsystemInstListString = instTable
+            .filter(instr => systemSets.contains(instr.instructionSet.name) && systemInstSets.contains(instr.name))
+            .filter(_.pseudoFrom.isEmpty)
 
         val writer = new BufferedWriter(new FileWriter(instTableOutputFile))
-        writer.write(rv32imInstListString.toString())
+        writer.write((rv32imInstListString ++ rvcsrInstListString ++ rvsystemInstListString).toString())
         writer.close()
     /* OutPut Inst Table End */
 
     val rv32imInstList = instTable
         .filter(instr => targetSets.contains(instr.instructionSet.name)) // filter Sets
+        // .filter(inst => simplecsrSets.contains(inst.name)) // filter names
         .filter(_.pseudoFrom.isEmpty)
         .map(Insn(_))
         .toSeq
 
+    val rvcsrInstList = instTable
+        .filter(instr => csrSets.contains(instr.instructionSet.name) && csrInstSets.contains(instr.name))
+        .filter(_.pseudoFrom.isEmpty)
+        .map(Insn(_))
+        .toSeq
+
+    val rvsystemInstList = instTable
+        .filter(instr => systemSets.contains(instr.instructionSet.name) && systemInstSets.contains(instr.name))
+        .filter(_.pseudoFrom.isEmpty)
+        .map(Insn(_))
+        .toSeq
 
     /* 很玄学的bug：当 ImmType 放在 Seq 中最后一位时，会导致 decodeResult 的值错误！ */
-    val decodeTable = new DecodeTable(rv32imInstList,
+    val decodeTable = new DecodeTable(rv32imInstList ++ rvcsrInstList ++ rvsystemInstList,
     Seq(
         ImmType, aluD1slct, aluD2slct, memEnslct,
-        JMPslct, PCInc4slct, PCSrcslct, CondReslct, DMEMExtSign
-        ))
-
-    val decodeTableGen = new DecodeTable(rv32imInstList,
-    Seq(
+        JMPslct, PCInc4slct, PCSrcslct, CondReslct, DMEMExtSign,
         GenAluOp, GenSub, GenWen, GenAluSext, GenWriteMask,
-        GenDMEMExtPos, GenMwen
+        GenDMEMExtPos, GenMwen,
+        CSRWenslct
     ))
     val decodeResult = decodeTable.decode(IMEMio.inst_data)
     val decodeResultGen = decodeTableGen.decode(IMEMio.inst_data)
@@ -113,16 +133,16 @@ class IDU extends Module {
     ioMUX.alud1slct  := decodeResult(aluD1slct)
     ioMUX.alud2slct  := decodeResult(aluD2slct)
     ioMUX.pcInc4slct := decodeResult(PCInc4slct)
-    ioMUX.pcsrcslct := decodeResult(PCSrcslct)
-    ioALU.aluop      := decodeResultGen(GenAluOp)
-    ioALU.sub := decodeResultGen(GenSub)
+    ioMUX.pcsrcslct  := decodeResult(PCSrcslct)
+    ioALU.aluop      := decodeResult(GenAluOp)
+    ioALU.sub        := decodeResult(GenSub)
     ioALU.condReslct := decodeResult(CondReslct)
-    ioALU.Sext := decodeResultGen(GenAluSext)
+    ioALU.Sext       := decodeResult(GenAluSext)
     ioJMP.jmpslct    := decodeResult(JMPslct)
     ioDMEM.menslct   := decodeResult(memEnslct)
-    ioDMEM.mwen      := decodeResultGen(GenMwen)
-    ioDMEM.wmask     := decodeResultGen(GenWriteMask)
-    ioDMEM.extPos    := decodeResultGen(GenDMEMExtPos)
+    ioDMEM.mwen      := decodeResult(GenMwen)
+    ioDMEM.wmask     := decodeResult(GenWriteMask)
+    ioDMEM.extPos    := decodeResult(GenDMEMExtPos)
     ioDMEM.extSign   := decodeResult(DMEMExtSign)
 
     val imm_i    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 20))                                                       // I-type
@@ -153,5 +173,5 @@ class IDU extends Module {
     // ioGPR.src1 := Mux(rdSrc1, IMEMio.inst_data(19, 15), 0.U)
     // ioGPR.src2 := Mux(rdSrc2, IMEMio.inst_data(24, 20), 0.U)
     ioGPR.rd   := IMEMio.inst_data(11, 7)
-    ioGPR.wen  := decodeResultGen(GenWen)
+    ioGPR.wen  := decodeResult(GenWen)
 }
