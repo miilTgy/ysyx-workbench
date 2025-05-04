@@ -8,6 +8,8 @@ import chisel3.dontTouch
 import aluop._
 import idu.{IOALU, IOJMP}
 import chisel3.util.Cat
+import chisel3.util.MuxCase
+import chisel3.util.Mux1H
 
 class IODMEMUX extends Bundle {
     val res_addr = Output(UInt(64.W))
@@ -65,41 +67,38 @@ class ALU extends Module {
     assert(valid, "ALU.scala: aluop decode result may be invalid");
     dontTouch(aluopDecoded)
 
-    val ResPreSext = MuxLookup(aluopDecoded, 0.U)(
-        Seq(
-            // AluOp.ADD -> addsubRes,
-            AluOp.ADDSUB -> addsubRes,
-            AluOp.UNSUB -> addsubRes,
-            // AluOp.SUB -> addsubRes,
-            AluOp.XOR -> xorRes,
-            AluOp.OR  -> orRes,
-            AluOp.AND -> andRes,
-            AluOp.SLL -> sllRes,
-            AluOp.SLR -> srlRes,
-            AluOp.SRA -> sraRes,
-            AluOp.MUL -> mulRes,
-            AluOp.DIV -> divRes,
-            AluOp.REM -> remRes,
-            AluOp.BEQ -> addsubRes,
-            AluOp.BNE -> addsubRes,
-            AluOp.BLT -> addsubRes,
-            AluOp.BGE -> addsubRes,
-            AluOp.SLLW -> sllwRes,
-            AluOp.SRLW -> srlwRes,
-            AluOp.SRAW -> srawRes,
-            AluOp.D2PASS -> MUXio.data2
+    val ResPreSext = Mux1H(Seq(
+            (aluopDecoded === AluOp.ADDSUB) -> addsubRes,
+            (aluopDecoded === AluOp.UNSUB) -> addsubRes,
+            (aluopDecoded === AluOp.XOR) -> xorRes,
+            (aluopDecoded === AluOp.OR)  -> orRes,
+            (aluopDecoded === AluOp.AND) -> andRes,
+            (aluopDecoded === AluOp.SLL) -> sllRes,
+            (aluopDecoded === AluOp.SLR) -> srlRes,
+            (aluopDecoded === AluOp.SRA) -> sraRes,
+            (aluopDecoded === AluOp.MUL) -> mulRes,
+            (aluopDecoded === AluOp.DIV) -> divRes,
+            (aluopDecoded === AluOp.REM) -> remRes,
+            (aluopDecoded === AluOp.BEQ) -> addsubRes,
+            (aluopDecoded === AluOp.BNE) -> addsubRes,
+            (aluopDecoded === AluOp.BLT) -> addsubRes,
+            (aluopDecoded === AluOp.BGE) -> addsubRes,
+            (aluopDecoded === AluOp.SLLW) -> sllwRes,
+            (aluopDecoded === AluOp.SRLW) -> srlwRes,
+            (aluopDecoded === AluOp.SRAW) -> srawRes,
+            (aluopDecoded === AluOp.D1PASS) -> MUXio.data1,
+            (aluopDecoded === AluOp.D2PASS) -> MUXio.data2
     ))
     dontTouch(ResPreSext)
         ioDMEMUX.res_addr := Mux(IDUio.Sext, Cat(Fill(32, ResPreSext(31)), ResPreSext(31, 0)), ResPreSext)
 
-    val branchRes = MuxLookup(aluopDecoded, 0.B)(
-        Seq(
-            AluOp.BEQ -> (MUXio.data1 === MUXio.data2),
-            AluOp.BNE -> (MUXio.data1 =/= MUXio.data2),
-            AluOp.BLT -> (MUXio.data1.asSInt < MUXio.data2.asSInt),
-            AluOp.BLTU -> (MUXio.data1.asUInt < MUXio.data2.asUInt),
-            AluOp.BGE -> (MUXio.data1.asSInt >= MUXio.data2.asSInt),
-            AluOp.BGEU -> (MUXio.data1.asUInt >= MUXio.data2.asUInt)
+    val branchRes = Mux1H(Seq(
+            (aluopDecoded === AluOp.BEQ) -> (MUXio.data1 === MUXio.data2),
+            (aluopDecoded === AluOp.BNE) -> (MUXio.data1 =/= MUXio.data2),
+            (aluopDecoded === AluOp.BLT) -> (MUXio.data1.asSInt < MUXio.data2.asSInt),
+            (aluopDecoded === AluOp.BLTU) -> (MUXio.data1.asUInt < MUXio.data2.asUInt),
+            (aluopDecoded === AluOp.BGE) -> (MUXio.data1.asSInt >= MUXio.data2.asSInt),
+            (aluopDecoded === AluOp.BGEU) -> (MUXio.data1.asUInt >= MUXio.data2.asUInt)
         )
     )
     dontTouch(branchRes)
