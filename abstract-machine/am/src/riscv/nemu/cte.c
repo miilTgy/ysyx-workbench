@@ -5,6 +5,7 @@
 static Context* (*user_handler)(Event, Context*) = NULL;
 
 Context* __am_irq_handle(Context *c) {
+  c->mepc += 4;
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
@@ -15,7 +16,6 @@ Context* __am_irq_handle(Context *c) {
     c = user_handler(ev, c);
     assert(c != NULL);
   }
-
   return c;
 }
 
