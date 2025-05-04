@@ -10,8 +10,9 @@ char printf_buf[4096];
 int printf(const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
+  char *s = (char *) fmt;
 
-  int len = vsprintf(printf_buf, fmt, ap);
+  int len = vsprintf(printf_buf, s, ap);
   for (int i=0; i<len; i++) {
     putch(printf_buf[i]);
   }
