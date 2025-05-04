@@ -44,6 +44,12 @@ class IODMEM extends Bundle {
 class IOWBU extends Bundle {
 }
 
+class IOCSR extends Bundle {
+    val csrWenslct = Output(Bool())
+    val csrWaddr = Output(UInt(12.W))
+    val csrRaddr = Output(UInt(12.W))
+}
+
 class IDU extends Module {
     val IFUio = IO(Flipped(new ifu.IOIMEM))
     val ioPCs = IO(new ifu.IOIMEM)
@@ -60,6 +66,7 @@ class IDU extends Module {
     val ioJMP = IO(new IOJMP)
     val ioDMEM = IO(new IODMEM)
     val ioWBU = IO(new IOWBU)
+    val ioCSR = IO(new IOCSR)
 
     ioPCs <> IFUio // pc pass through
 
@@ -136,6 +143,7 @@ class IDU extends Module {
     ioDMEM.wmask     := decodeResult(GenWriteMask)
     ioDMEM.extPos    := decodeResult(GenDMEMExtPos)
     ioDMEM.extSign   := decodeResult(DMEMExtSign)
+    ioCSR.csrWenslct := decodeResult(CSRWenslct)
 
     val imm_i    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 20))                                                       // I-type
     val imm_s    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 25), IMEMio.inst_data(11, 7))                              // S-type

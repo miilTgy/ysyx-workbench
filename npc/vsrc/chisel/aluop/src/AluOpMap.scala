@@ -7,7 +7,7 @@ object AluOp extends ChiselEnum {
   val ADDSUB, UNSUB, XOR, OR, AND,
   SLL, SLR, SRA, MUL, DIV, REM,
   BEQ, BNE, BLT, BLTU, BGE, BGEU,
-  SLLW, SRLW, SRAW, D2PASS = Value
+  SLLW, SRLW, SRAW, D1PASS, D2PASS = Value
 }
 
 object AluOpMap {
@@ -17,7 +17,8 @@ object AluOpMap {
     "lb", "lh", "lw", "ld", "lbu", "lhu", "lwu",
     "sb", "sh", "sw", "sd",
     "add", "addw",
-    "fence", "ebreak", "jalr", "jal", "ecall"
+    "fence", "ebreak", "jalr", "jal", "ecall",
+    "mret",
   )
   val SubSeq : Seq[String] = Seq(
     "slti", "slt",
@@ -80,6 +81,9 @@ object AluOpMap {
   val SrawSeq : Seq[String] = Seq(
     "sraiw", "sraw"
   )
+  val D1passSeq : Seq[String] = Seq(
+    "csrrw", "csrrs"
+  )
   val D2PassSeq : Seq[String] = Seq(
     "lui"
   )
@@ -107,6 +111,7 @@ object AluOpMap {
     case m if SllwSeq.contains(m) => AluOp.SLLW
     case m if SrlwSeq.contains(m) => AluOp.SRLW
     case m if SrawSeq.contains(m) => AluOp.SRAW
+    case m if D1passSeq.contains(m) => AluOp.D1PASS
     case m if D2PassSeq.contains(m) => AluOp.D2PASS
     case _ => throw new IllegalArgumentException(s"Unknown mnemonic: $mnemonic")
   }
