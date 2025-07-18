@@ -50,6 +50,7 @@ class CPU extends Module {
 
     csr.IDUio <> idu.ioCSR
     csr.WBUio <> wbu.ioCSR
+    csr.IFUio <> ifu.ioIMEM
 
     val jmpslct = idu.ioJMP.jmpslct & alu.ioJMP.jmpslct
     val snpc = ifu.ioIMEM.pc + 4.U
@@ -57,7 +58,8 @@ class CPU extends Module {
     dontTouch(snpc)
     val dnpc = idu.ioMUX.imm + pcsrc
     dontTouch(dnpc)
-    ifu.MUXio.pcNext := Mux(jmpslct, dnpc, snpc)
+    val nextpc = Mux(jmpslct, dnpc, snpc)
+    ifu.MUXio.pcNext := Mux(idu.ioMUX.Expcslct, csr.ioMUX.dnpc, nextpc)
 }
 
 object Main extends App {

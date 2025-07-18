@@ -28,6 +28,21 @@ object CSRWenslct extends BoolDecodeField[Insn] {
     }
 }
 
+object EXPCslct extends BoolDecodeField[Insn] {
+    override def name = "is expc inst"
+
+    val InstSeq: Seq[String] = Seq(
+        "ecall", "mret"
+    )
+    override def genTable(i: Insn): BitPat = {
+        if (InstSeq.contains(i.inst.name)) {
+            BitPat(true.B)
+        } else {
+            BitPat(false.B)
+        }
+    }
+}
+
 object GenCSROp extends DecodeField[Insn, UInt] {
     override def name = "gen csrop"
 

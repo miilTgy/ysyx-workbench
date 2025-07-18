@@ -1,18 +1,22 @@
 #include "cpusrc/include/utils.h"
 #include "cpusrc/include/difftest.h"
+#include <cstdio>
 
 // Definition of paddr_rear from DPI-C
 extern "C" int pimem_read(unsigned long long paddr) {
     int len = 4;
-    uint64_t ret = 0;
+    uint32_t ret = 0;
     if (in_pmem(paddr)) {
-        ret = (uint32_t) host_read(guest_to_host(paddr), len);
+        // ret = (uint32_t) host_read(guest_to_host(paddr), len);
+        ret = *(uint32_t *) guest_to_host(paddr);
     } else {
         printf("%s[HIT] IMEM out of bound at pc = 0x%lx%s\n", ANSI_BG_RED, TB(DUT(io_pc)), ANSI_NONE);
     }
     if (ret == 0x00100073) {
         npc_state = NPC_END;
     }
+    if (ret == 0) printf("0x80000b60 = 0x%08x\n", *(uint32_t *)guest_to_host(0x80000b60));
+    // printf("inst: 0x%08x\n", ret);
     return ret;
 }
 
@@ -92,11 +96,14 @@ int main(int argc, char *argv[]) {
     int cycle_num = 0;
     set_cpu();
     std::cout << "[OK] set cpu" << std::endl;
+    // std::cout << "pc = 0x" << std::hex << cpu.pc << std::dec << std::endl;
     #ifdef CONFIG_DIFFTEST
     ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
     #endif
     std::cout << "[OK] copy regs to ref" << std::endl;
     init_rtc();
+    std::cout << "[OK] init rtc" << std::endl;
+    std::cout << "****************************START***************************" << std::endl;
     while (npc_state != NPC_END) {
         cycle_num ++;
         // std::cout << "cycle_num " << cycle_num

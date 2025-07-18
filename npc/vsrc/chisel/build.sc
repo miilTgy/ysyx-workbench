@@ -66,5 +66,5 @@ object CPU extends chiselModule {
   override def moduleDeps = Seq(GPR, IFU, IMEM, IDU, aluop, ALU, LSU, DMEM, WBU, CSR)
 }
 object CSR extends chiselModule {
-  override def moduleDeps = Seq(IDU, csrop)
+  override def moduleDeps = Seq(IDU, csrop, IFU)
 }

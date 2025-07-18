@@ -75,7 +75,14 @@ static inline int check_reg_idx(int idx) {
 static inline const char* reg_name(int idx) {
     extern const char* regs[];
     return regs[check_reg_idx(idx)];
-}  
+}
+
+#define CHECK_CSR(i) if (dut_r->csr.i != ref_r->csr.i) { \
+    printf("Diff error: CSR %s: DUT = 0x%016lx, REF = 0x%016lx\n", #i, dut_r->csr.i, ref_r->csr.i); \
+    printf("DUT PC = 0x%lx; REF PC = 0x%lx\n", dut_r->pc, ref_r->pc); \
+    return false; \
+  } \
+
 bool isa_difftest_checkregs(CPU_state *ref_r, CPU_state *dut_r) {
     for (size_t i=0; i<32; i++) {
       if (dut_r->gpr[i] != ref_r->gpr[i]) {
@@ -88,6 +95,10 @@ bool isa_difftest_checkregs(CPU_state *ref_r, CPU_state *dut_r) {
       printf("Diff error: DUT pc = 0x%lx, REF pc = 0x%lx\n", dut_r->pc, ref_r->pc);
       return false;
     }
+    CHECK_CSR(mtvec)
+    CHECK_CSR(mepc)
+    CHECK_CSR(mstatus)
+    CHECK_CSR(mcause)
     return true;
   }
 void isa_reg_display() {
@@ -108,6 +119,10 @@ void ref_reg_display(CPU_state *ref) {
         }
     }
     printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "ref->pc", ref->pc);
+    printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\t", "csr.mtvec", ref->csr.mtvec);
+    printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "csr.mepc", ref->csr.mepc);
+    printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\t", "csr.mstatus", ref->csr.mstatus);
+    printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "csr.mcause", ref->csr.mcause);
 }
 static void checkregs(CPU_state *ref, CPU_state *dut, vaddr_t pc) {
     if (!isa_difftest_checkregs(ref, dut)) {

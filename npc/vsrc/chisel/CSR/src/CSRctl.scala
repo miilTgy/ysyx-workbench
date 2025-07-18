@@ -5,6 +5,7 @@ import chisel3.util.Mux1H
 
 import idu.IOCSR
 import csrop.CSROp
+import ifu.IOIMEM
 
 class WBUIO extends Bundle {
   val csrWB = Input(UInt(64.W))
@@ -12,30 +13,58 @@ class WBUIO extends Bundle {
 
 class IOMUX extends Bundle {
   val csrRdata = Output(UInt(64.W))
+  val dnpc = Output(UInt(64.W))
 }
 
 class CSRctl extends Module {
     val WBUio = IO(new WBUIO)
     val ioMUX = IO(new IOMUX)
-    val IDUio = IO(Flipped(new IOCSR))
+    val IDUio = IO(Flipped(new idu.IOCSR))
+    val IFUio = IO(Flipped(new ifu.IOIMEM))
 
     val CSRs = Module(new CSR)
 
-    CSRs.CSRio.mstatusWen := (IDUio.csrWaddr === CSRIndex.MSTATUS.asUInt) & IDUio.csrWen
-    CSRs.CSRio.mtvecWen   := (IDUio.csrWaddr === CSRIndex.MTVEC.asUInt) & IDUio.csrWen
-    CSRs.CSRio.mepcWen    := (IDUio.csrWaddr === CSRIndex.MEPC.asUInt) & IDUio.csrWen
-    CSRs.CSRio.mcauseWen  := (IDUio.csrWaddr === CSRIndex.MCUASE.asUInt) & IDUio.csrWen
+    val isEcall = IDUio.csrop === csrop.CSROp.ECALL.asUInt
+    val isMret = IDUio.csrop === csrop.CSROp.MRET.asUInt
 
-    val Wdata = Mux1H(Seq(
+    CSRs.CSRio.mstatusWen := ((IDUio.csrWaddr === CSRIndex.MSTATUS.asUInt) & IDUio.csrWen) | isEcall | isMret
+    CSRs.CSRio.mtvecWen   := ((IDUio.csrWaddr === CSRIndex.MTVEC.asUInt) & IDUio.csrWen)
+    CSRs.CSRio.mepcWen    := ((IDUio.csrWaddr === CSRIndex.MEPC.asUInt) & IDUio.csrWen) | isEcall
+    CSRs.CSRio.mcauseWen  := ((IDUio.csrWaddr === CSRIndex.MCUASE.asUInt) & IDUio.csrWen) | isEcall
+
+    val Adata = Mux1H(Seq(
         (IDUio.csrop === csrop.CSROp.WRITE.asUInt) -> WBUio.csrWB,
         (IDUio.csrop === csrop.CSROp.SET.asUInt) -> (ioMUX.csrRdata | WBUio.csrWB),
         (IDUio.csrop === csrop.CSROp.CLEAR.asUInt) -> (ioMUX.csrRdata & ~WBUio.csrWB),
     ))
 
-    CSRs.CSRio.mstatusWdata := Wdata
-    CSRs.CSRio.mtvecWdata   := Wdata
-    CSRs.CSRio.mepcWdata    := Wdata
-    CSRs.CSRio.mcauseWdata  := Wdata
+    val MPIE = CSRs.CSRio.mstatusRdata(7)
+    val MIE = CSRs.CSRio.mstatusRdata(3)
+
+    // val mstatusEcall = (CSRs.CSRio.mstatusRdata & ~(1.U << 7)) |
+    //                     (CSRs.CSRio.mstatusRdata(63, 8) ## MIE ## CSRs.CSRio.mstatusRdata(6, 0)) // MPIE = MIE
+    val mstatusEcall = CSRs.CSRio.mstatusRdata
+
+    // val mstatusMret = (CSRs.CSRio.mstatusRdata(63, 4) ## MPIE ## CSRs.CSRio.mstatusRdata(2, 0)) | // MIE = MPIE
+    //                     (CSRs.CSRio.mstatusRdata(63, 8) ## 1.U(1.W) ## CSRs.CSRio.mstatusRdata(6, 0)) // MPIE = 1
+    val mstatusMret = CSRs.CSRio.mstatusRdata
+    dontTouch(mstatusEcall)
+    dontTouch(mstatusMret)
+
+    val mstatusEdata = Mux(isEcall, mstatusEcall, 0.U) | Mux(isMret, mstatusMret, 0.U)
+
+    val mtvecEdata = CSRs.CSRio.mtvecRdata
+
+    val mepcEcall = IFUio.pc
+    val mepcEdata = mepcEcall
+
+    val mcauseEcall = 11.U
+    val mcauseEdata = mcauseEcall
+
+    CSRs.CSRio.mstatusWdata := Mux(IDUio.csrWen, Adata, mstatusEdata)
+    CSRs.CSRio.mtvecWdata   := Mux(IDUio.csrWen, Adata, mtvecEdata)
+    CSRs.CSRio.mepcWdata    := Mux(IDUio.csrWen, Adata, mepcEdata)
+    CSRs.CSRio.mcauseWdata  := Mux(IDUio.csrWen, Adata, mcauseEdata)
 
     ioCSRctl.csrRdata := Mux1H(Seq(
         (IDUio.csrRaddr === CSRIndex.MSTATUS.asUInt) -> CSRs.CSRio.mstatusRdata,
@@ -43,6 +72,8 @@ class CSRctl extends Module {
         (IDUio.csrRaddr === CSRIndex.MEPC.asUInt) -> CSRs.CSRio.mepcRdata,
         (IDUio.csrRaddr === CSRIndex.MCUASE.asUInt) -> CSRs.CSRio.mcauseRdata,
     ))
+
+    ioMUX.dnpc := Mux(isEcall, CSRs.CSRio.mtvecRdata, CSRs.CSRio.mepcRdata)
 }
 
 object Main extends App {

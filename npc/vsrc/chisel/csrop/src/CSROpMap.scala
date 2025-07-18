@@ -4,10 +4,7 @@ import chisel3._
 import chisel3.util._
 
 object CSROp extends ChiselEnum {
-    val NONE  = Value("b000".U)
-    val WRITE = Value("b001".U)
-    val SET   = Value("b010".U)
-    val CLEAR = Value("b011".U)
+    val NONE, WRITE, SET, CLEAR, ECALL, MRET = Value
 }
 
 object CSROpMap {
@@ -20,11 +17,19 @@ object CSROpMap {
     val ClearSeq: Seq[String] = Seq(
         "csrrc", "csrrci"
     )
+    val EcallSeq: Seq[String] = Seq(
+        "ecall"
+    )
+    val MretSeq: Seq[String] = Seq(
+        "mret"
+    )
 
     def getCSROp(mnemonic: String): CSROp.Type = mnemonic match {
         case m if WriteSeq.contains(m) => CSROp.WRITE
         case m if SetSeq.contains(m)   => CSROp.SET
         case m if ClearSeq.contains(m) => CSROp.CLEAR
+        case m if EcallSeq.contains(m) => CSROp.ECALL
+        case m if MretSeq.contains(m)  => CSROp.MRET
         case _                         => CSROp.NONE
     }
 }

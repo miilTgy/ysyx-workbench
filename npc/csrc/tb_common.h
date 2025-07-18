@@ -2,7 +2,7 @@
  * @Author: Zeng GuangYi tgy_scut2021@outlook.com
  * @Date: 2025-01-15 20:31:21
  * @LastEditors: Zeng GuangYi tgy_scut2021@outlook.com
- * @LastEditTime: 2025-07-18 16:57:58
+ * @LastEditTime: 2025-07-18 17:00:19
  * @FilePath: /ysyx-workbench/npc/csrc/tb_common.h
  * @Description: Common Verilator testbench headder
  * 
@@ -13,7 +13,7 @@
 #define __TB_COM__
 
 #define NDEBUG
-#define CONFIG_WAVE
+// #define CONFIG_WAVE
 
 #include <stdlib.h>
 #include <iostream>

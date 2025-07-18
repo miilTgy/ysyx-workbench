@@ -5,8 +5,8 @@
 
 typedef struct {
     reg_t gpr[32];
-    MCSR_state csr;
     vaddr_t pc;
+    MCSR_state csr;
 } CPU_state;
 
 #endif

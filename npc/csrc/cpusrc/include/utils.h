@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "isa-def.h"
 #include "devices/timer.h"
+#include <cstdio>
 
 // Create NPE State
 enum NPC_STATE { NPC_END, NPC_ABORT, NPC_RUNNING };
@@ -42,8 +43,10 @@ static inline void host_write(void *addr, int len, uint64_t data) {
 // mem img
 static const uint32_t img [] = {
     0x00000297,  // auipc t0,0
-    0x00028823,  // sb  zero,16(t0)
-    0x0102c503,  // lbu a0,16(t0)
+    0x342022f3,  // csrrs x5 mcause x0
+    0x30031073,  // csrrw x0 mstatus x6
+    // 0x00028823,   // sb  zero,16(t0)
+    // 0x0102c503,   // lbu a0,16(t0)
     0x00100073,  // ebreak (used as nemu_trap)
     0xdeadbeef,  // some data
 };  
@@ -78,6 +81,8 @@ static long load_img() {
     fseek(fp, 0, SEEK_SET);
     int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp);
     assert(ret == 1);
+
+    printf("0x80000b60 = 0x%08x\n", *(uint32_t *)guest_to_host(0x80000b60));
   
     fclose(fp);
     return size;
@@ -138,6 +143,7 @@ void init_npc(int argc, char *argv[]) {
 CPU_state cpu = {};
 CPU_state ref = {};
 #define SET_GPR(i) cpu.gpr[i] = tb->dut->rootp->CPU__DOT__gpr__DOT__regs_##i;
+#define SET_CSR(i) cpu.csr.i = tb->dut->rootp->CPU__DOT__csr__DOT__CSRs__DOT__##i;
 void set_cpu() {
   cpu.pc = tb->dut->rootp->CPU__DOT__ifu__DOT__pc;
   cpu.gpr[0] = 0;
@@ -149,6 +155,7 @@ void set_cpu() {
   SET_GPR(21) SET_GPR(22) SET_GPR(23) SET_GPR(24)
   SET_GPR(25) SET_GPR(26) SET_GPR(27) SET_GPR(28)
   SET_GPR(29) SET_GPR(30) SET_GPR(31)
+  SET_CSR(mtvec) SET_CSR(mepc) SET_CSR(mstatus) SET_CSR(mcause)
 }
 
 
