@@ -48,6 +48,9 @@ class CPU extends Module {
     gpr.GPRio <> idu.ioGPR
     gpr.dataInio <> wbu.ioGPR
 
+    csr.IDUio <> idu.ioCSR
+    csr.WBUio <> wbu.ioCSR
+
     val jmpslct = idu.ioJMP.jmpslct & alu.ioJMP.jmpslct
     val snpc = ifu.ioIMEM.pc + 4.U
     val pcsrc = Mux(idu.ioMUX.pcsrcslct, gpr.dataOutio.data1, ifu.ioIMEM.pc)

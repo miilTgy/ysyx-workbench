@@ -1,7 +1,7 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
-// #define CONFIG_DIFFTEST
+#define CONFIG_DIFFTEST
 
 #include <iostream>
 

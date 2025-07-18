@@ -59,6 +59,7 @@ class IDU extends Module {
         val alud2slct = Output(Bool())
         val pcInc4slct = Output(Bool())
         val pcsrcslct = Output(Bool())
+        val csrRenslct = Output(Bool())
         val imm       = Output(UInt(64.W))
     })
     val ioALU = IO(new IOALU)
@@ -125,7 +126,7 @@ class IDU extends Module {
         JMPslct, PCInc4slct, PCSrcslct, CondReslct, DMEMExtSign,
         GenAluOp, GenSub, GenWen, GenAluSext, GenWriteMask,
         GenDMEMExtPos, GenMwen,
-        CSRWenslct
+        CSRWen, GenCSROp
     ))
     val decodeResult = decodeTable.decode(IMEMio.inst_data)
 

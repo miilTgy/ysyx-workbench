@@ -4,27 +4,38 @@ import chisel3._
 import chisel3.util.Mux1H
 
 import idu.IOCSR
+import csrop.CSROp
 
-class CSRctlIO extends Bundle {
-    val csrRdata = Output(UInt(64.W))
-    val csrWdata = Input(UInt(64.W))
+class WBUIO extends Bundle {
+  val csrWB = Input(UInt(64.W))
+}
+
+class IOMUX extends Bundle {
+  val csrRdata = Output(UInt(64.W))
 }
 
 class CSRctl extends Module {
-    val ioCSRctl = IO(new CSRctlIO)
+    val WBUio = IO(new WBUIO)
+    val ioMUX = IO(new IOMUX)
     val IDUio = IO(Flipped(new IOCSR))
 
     val CSRs = Module(new CSR)
 
-    CSRs.CSRio.mstatusWen := Mux(IDUio.csrWaddr === CSRIndex.MSTATUS.asUInt, IDUio.csrWenslct, false.B)
-    CSRs.CSRio.mtvecWen   := Mux(IDUio.csrWaddr === CSRIndex.MTVEC.asUInt, IDUio.csrWenslct, false.B)
-    CSRs.CSRio.mepcWen    := Mux(IDUio.csrWaddr === CSRIndex.MEPC.asUInt, IDUio.csrWenslct, false.B)
-    CSRs.CSRio.mcauseWen  := Mux(IDUio.csrWaddr === CSRIndex.MCUASE.asUInt, IDUio.csrWenslct, false.B)
+    CSRs.CSRio.mstatusWen := (IDUio.csrWaddr === CSRIndex.MSTATUS.asUInt) & IDUio.csrWen
+    CSRs.CSRio.mtvecWen   := (IDUio.csrWaddr === CSRIndex.MTVEC.asUInt) & IDUio.csrWen
+    CSRs.CSRio.mepcWen    := (IDUio.csrWaddr === CSRIndex.MEPC.asUInt) & IDUio.csrWen
+    CSRs.CSRio.mcauseWen  := (IDUio.csrWaddr === CSRIndex.MCUASE.asUInt) & IDUio.csrWen
 
-    CSRs.CSRio.mstatusWdata := ioCSRctl.csrWdata
-    CSRs.CSRio.mtvecWdata   := ioCSRctl.csrWdata
-    CSRs.CSRio.mepcWdata    := ioCSRctl.csrWdata
-    CSRs.CSRio.mcauseWdata  := ioCSRctl.csrWdata
+    val Wdata = Mux1H(Seq(
+        (IDUio.csrop === csrop.CSROp.WRITE.asUInt) -> WBUio.csrWB,
+        (IDUio.csrop === csrop.CSROp.SET.asUInt) -> (ioMUX.csrRdata | WBUio.csrWB),
+        (IDUio.csrop === csrop.CSROp.CLEAR.asUInt) -> (ioMUX.csrRdata & ~WBUio.csrWB),
+    ))
+
+    CSRs.CSRio.mstatusWdata := Wdata
+    CSRs.CSRio.mtvecWdata   := Wdata
+    CSRs.CSRio.mepcWdata    := Wdata
+    CSRs.CSRio.mcauseWdata  := Wdata
 
     ioCSRctl.csrRdata := Mux1H(Seq(
         (IDUio.csrRaddr === CSRIndex.MSTATUS.asUInt) -> CSRs.CSRio.mstatusRdata,
