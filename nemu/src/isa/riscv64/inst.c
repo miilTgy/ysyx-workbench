@@ -131,18 +131,76 @@ static int decode_exec(Decode *s) {
   INSTPAT("0100000 ????? ????? 101 ????? 01110 11", sraw   , R, R(rd) = SEXT(((int32_t) src1 >> BITS(src2, 4, 0)), 32));
 
   INSTPAT("0000001 ????? ????? 000 ????? 01100 11", mul    , R, R(rd) = src1 * src2);
-  INSTPAT("0000001 ????? ????? 001 ????? 01100 11", mulh   , R, __int128_t tmp = (sword_t) src1 * (sword_t) src2; R(rd) = (tmp >> 64));
-  INSTPAT("0000001 ????? ????? 010 ????? 01100 11", mulhsu , R, __int128_t tmp = (sword_t) src1 * (word_t)  src2; R(rd) = (tmp >> 64));
-  INSTPAT("0000001 ????? ????? 010 ????? 01100 11", mulhu  , R, __uint128_t tmp = (word_t) src1 * (word_t)  src2; R(rd) = (tmp >> 64));
+  INSTPAT("0000001 ????? ????? 001 ????? 01100 11", mulh   , R, R(rd) = ((__int128_t)(sword_t) src1 * (__int128_t)(sword_t) src2) >> 64);
+  INSTPAT("0000001 ????? ????? 010 ????? 01100 11", mulhsu , R, R(rd) = ((__int128_t)(sword_t) src1 * (__int128_t)(word_t)  src2) >> 64);
+  INSTPAT("0000001 ????? ????? 011 ????? 01100 11", mulhu  , R, R(rd) = ((__int128_t)(word_t)  src1 * (__int128_t)(word_t)  src2) >> 64);
   INSTPAT("0000001 ????? ????? 000 ????? 01110 11", mulw   , R, R(rd) = SEXT(BITS((int32_t)  src1 * (int32_t)  src2, 31, 0), 32));
-  INSTPAT("0000001 ????? ????? 100 ????? 01100 11", div    , R, R(rd) = (sword_t) src1 / (sword_t) src2);
-  INSTPAT("0000001 ????? ????? 101 ????? 01100 11", divu   , R, R(rd) = (word_t)  src1 / (word_t)  src2);
-  INSTPAT("0000001 ????? ????? 110 ????? 01100 11", rem    , R, R(rd) = (sword_t) src1 % (sword_t) src2);
-  INSTPAT("0000001 ????? ????? 111 ????? 01100 11", remu   , R, R(rd) = (word_t)  src1 % (word_t)  src2);
-  INSTPAT("0000001 ????? ????? 100 ????? 01110 11", divw   , R, R(rd) = SEXT(BITS((int32_t)  src1 / (int32_t)  src2, 31, 0), 32));
-  INSTPAT("0000001 ????? ????? 101 ????? 01110 11", divuw  , R, R(rd) = SEXT(BITS((uint32_t) src1 / (uint32_t) src2, 31, 0), 32));
-  INSTPAT("0000001 ????? ????? 110 ????? 01110 11", remw   , R, R(rd) = SEXT(BITS((int32_t)  src1 % (int32_t)  src2, 31, 0), 32));
-  INSTPAT("0000001 ????? ????? 111 ????? 01110 11", remuw  , R, R(rd) = SEXT(BITS((uint32_t) src1 % (uint32_t) src2, 31, 0), 32));
+
+  INSTPAT("0000001 ????? ????? 100 ????? 01100 11", div    , R,
+    // division by 0
+    if (src2 == 0) R(rd) = (word_t) -1; // all bits set
+    // signed division overflow
+    else if ((sword_t) src1 == INT64_MIN && (sword_t) src2 == -1) R(rd) = src1;
+    // normal division
+    else R(rd) = (sword_t) src1 / (sword_t) src2;
+  );
+
+  INSTPAT("0000001 ????? ????? 101 ????? 01100 11", divu   , R,
+    // division by 0
+    if (src2 == 0) R(rd) = (word_t) -1;
+    // normal division
+    else R(rd) = src1 / src2;
+  );
+
+  INSTPAT("0000001 ????? ????? 110 ????? 01100 11", rem    , R,
+    // division by 0
+    if (src2 == 0) R(rd) = src1;
+    // signed division overflow
+    else if ((sword_t) src1 == INT64_MIN && (sword_t) src2 == -1) R(rd) = 0;
+    // normal reminder
+    else R(rd) = (sword_t) src1 % (sword_t) src2;
+  );
+
+  INSTPAT("0000001 ????? ????? 111 ????? 01100 11", remu   , R,
+    // division by 0
+    if (src2 == 0) R(rd) = src1;
+    // normal reminder
+    else R(rd) = (word_t)  src1 % (word_t)  src2;
+  );
+
+  INSTPAT("0000001 ????? ????? 100 ????? 01110 11", divw   , R,
+    // division by 0
+    if (src2 == 0) R(rd) = (word_t) -1;
+    // signed division overflow
+    else if ((int32_t) src1 == INT32_MIN && (int32_t) src2 == (int32_t) -1) R(rd) = src1;
+    // normal division
+    else R(rd) = SEXT(BITS((int32_t) src1 / (int32_t) src2, 31, 0), 32);
+  );
+
+  INSTPAT("0000001 ????? ????? 101 ????? 01110 11", divuw  , R,
+    // division by 0
+    if (src2 == 0) R(rd) = SEXT(BITS(((int32_t) -1), 31, 0), 32);
+    // normal division
+    else R(rd) = SEXT(BITS((uint32_t) src1 / (uint32_t) src2, 31, 0), 32);
+  );
+
+  // INSTPAT("0000001 ????? ????? 110 ????? 01110 11", remw   , R, R(rd) = SEXT(BITS((int32_t)  src1 % (int32_t)  src2, 31, 0), 32));
+  INSTPAT("0000001 ????? ????? 110 ????? 01110 11", remw   , R,
+    // division by 0
+    if (src2 == 0) R(rd) = src1;
+    // signed division overflow
+    else if ((int32_t) src1 == INT32_MIN && (int32_t) src2 == (int32_t) -1) R(rd) = 0;
+    // normal reminder
+    else R(rd) = SEXT(BITS((int32_t)  src1 % (int32_t)  src2, 31, 0), 32);
+  );
+
+  // INSTPAT("0000001 ????? ????? 111 ????? 01110 11", remuw  , R, R(rd) = SEXT(BITS((uint32_t) src1 % (uint32_t) src2, 31, 0), 32));
+  INSTPAT("0000001 ????? ????? 111 ????? 01110 11", remuw  , R,
+    // division by 0
+    if (src2 == 0) R(rd) = src1;
+    // normal reminder
+    else R(rd) = SEXT(BITS((uint32_t) src1 % (uint32_t) src2, 31, 0), 32);
+  );
 
   INSTPAT("??????? ????? ????? 000 ????? 11000 11", beq    , B, s->dnpc = (src1 == src2) ? imm + s->pc : s->dnpc);
   INSTPAT("??????? ????? ????? 001 ????? 11000 11", bne    , B, s->dnpc = (src1 != src2) ? imm + s->pc : s->dnpc);
