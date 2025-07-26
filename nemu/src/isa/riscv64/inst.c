@@ -33,6 +33,12 @@ static inline word_t *get_csr(int idx) {
   case 0x341: csr = &cpu.csr.mepc; break;
   case 0x300: csr = &cpu.csr.mstatus; break;
   case 0x342: csr = &cpu.csr.mcause; break;
+  case 0x304: csr = &cpu.csr.mie; break;
+  case 0x344: csr = &cpu.csr.mip; break;
+  case 0x343: csr = &cpu.csr.mtval; break;
+  case 0x340: csr = &cpu.csr.mscratch; break;
+  case 0xc00: csr = &cpu.csr.cycle; break;
+  case 0xc01: csr = &cpu.csr.time; break;
   default: printf("CSR ERROR: cannot find csr idx %x!\n", idx); assert(0); break;
   }
   return csr;
