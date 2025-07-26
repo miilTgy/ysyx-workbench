@@ -19,7 +19,8 @@
 #include <common.h>
 
 typedef struct {
-  word_t mtvec, mepc, mstatus, mcause;
+  word_t mtvec, mepc, mstatus, mcause, mie, mip, mtval, mscratch;
+  word_t cycle, time;
 } MUXDEF(CONFIG_RV64, riscv64_MCSR_state, riscv32_MCSR_state);
 
 
