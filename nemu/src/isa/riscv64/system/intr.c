@@ -56,6 +56,11 @@ word_t isa_mret() {
   return cpu.csr.mepc;
 }
 
+word_t isa_wfi(vaddr_t pc) {
+  cpu.csr.mstatus = cpu.csr.mstatus | (1<<3); // enable MIE
+  return pc + 4;
+}
+
 word_t isa_query_intr() {
   if (((cpu.csr.mie >> 7) & 0x1) == 1 && // MIE.MTIE = 1
       ((cpu.csr.mstatus >> 3) & 0x1) == 1 && // MSTATUS.MIE = 1
