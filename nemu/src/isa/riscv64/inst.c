@@ -60,6 +60,7 @@ enum {
 #define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while(0)
 #define immJ() do { *imm = SEXT(((BITS(i, 31, 31) << 19) | (BITS(i, 19, 12) << 11) | (BITS(i, 20, 20) << 10) | BITS(i, 30, 21)) << 1, 21); } while(0)
 #define immB() do { *imm = SEXT((BITS(i, 31, 31) << 11 | BITS(i, 7, 7) << 10 | BITS(i, 30, 25) << 4 | BITS(i, 11, 8)) << 1, 13);} while(0)
+#define immICSR() do { *imm = BITS(i, 19, 15); } while(0)
 
 static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int *csr1, int type) {
   uint32_t i = s->isa.inst.val;
@@ -218,6 +219,10 @@ static int decode_exec(Decode *s) {
 
   INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , ICSR, difftest_skip_ref(); if (rd != 0) {word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) = src1);
   INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , ICSR, difftest_skip_ref(); if (rd != 0) { word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) |= src1);
+  INSTPAT("??????? ????? ????? 011 ????? 11100 11", csrrc  , ICSR, difftest_skip_ref(); if (rd != 0) { word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) &= ~src1);
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrwi , ICSR, difftest_skip_ref(); if (rd != 0) {word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) = imm);
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrsi , ICSR, difftest_skip_ref(); if (rd != 0) { word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) |= imm);
+  INSTPAT("??????? ????? ????? 011 ????? 11100 11", csrrci , ICSR, difftest_skip_ref(); if (rd != 0) { word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) &= ~imm);
 
   INSTPAT("00010?? 00000 ????? 010 ????? 01011 11", lr_w   , A, cpu.lr_addr = src1; cpu.lr_valid = true; cpu.lr_d = false; R(rd) = SEXT(Mr(src1, 4), 32));
   INSTPAT("00010?? 00000 ????? 011 ????? 01011 11", lr_d   , A, cpu.lr_addr = src1; cpu.lr_valid = true; cpu.lr_d = true;  R(rd) = Mr(src1, 8));
