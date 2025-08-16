@@ -26,8 +26,8 @@ word_t isa_raise_intr(word_t EXcode, vaddr_t epc) {
   // cpu.csr.mstatus = cpu.csr.mstatus & ~(1LU<<39); // mstatus.MPV(39) = 0
   // cpu.csr.mstatus = cpu.csr.mstatus | ((1<<11)+(1<<12)); // mstatus.MPP(12,11) = from M mode(11)
   // cpu.csr.mstatus = cpu.csr.mstatus & ~(1<<7); // mstatus.MPIE(7) = 1'b0
-  // cpu.csr.mstatus |= ((cpu.csr.mstatus&(1<<3))<<4); // mstatus.MPIE(7) = MIE(3)
-  // cpu.csr.mstatus &= ~(1<<3); // mstatus.MPIE(3) = 1'b0
+  cpu.csr.mstatus = (((cpu.csr.mstatus >> 3) & 0x1) == 1) ? (cpu.csr.mstatus | (1<<7)) : (cpu.csr.mstatus & ~(1<<7)); // mstatus.MPIE(7) = MIE(3)
+  cpu.csr.mstatus &= ~(1<<3); // mstatus.MIE(3) = 1'b0
   word_t eea = cpu.csr.mtvec & ~(0x3);
   return eea;
 }
@@ -40,7 +40,8 @@ word_t isa_mret() {
 
   // word_t mpie = cpu.csr.mstatus & 0x80;
   // cpu.csr.mstatus = cpu.csr.mstatus | (mpie >> 4); // MIE = MPIE
-  // cpu.csr.mstatus = cpu.csr.mstatus | 0x80; // MPIE = 1
+  cpu.csr.mstatus = (((cpu.csr.mstatus >> 7) & 0x1) == 1) ? (cpu.csr.mstatus | (1<<3)) : (cpu.csr.mstatus & ~(1<<3)); // mstatus.MIE(3) = MPIE(7)
+  cpu.csr.mstatus = cpu.csr.mstatus | (1 << 7); // mstatus.MPIE(7) = 1
 
   switch ((mpp>>11)) {
     case 0b00: /* Change Privilege Mode to U */ break;
@@ -56,5 +57,11 @@ word_t isa_mret() {
 }
 
 word_t isa_query_intr() {
+  if (((cpu.csr.mie >> 7) & 0x1) == 1 && // MIE.MTIE = 1
+      ((cpu.csr.mstatus >> 3) & 0x1) == 1 && // MSTATUS.MIE = 1
+      (cpu.INTR)) {
+    cpu.INTR = false;
+    return IRQ_TIMER;
+  }
   return INTR_EMPTY;
 }

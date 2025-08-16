@@ -25,6 +25,7 @@ typedef struct {
 
 
 typedef struct {
+  bool INTR;
   word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];
   vaddr_t pc;
   MUXDEF(CONFIG_RV64, riscv64_MCSR_state, riscv32_MCSR_state) csr;
