@@ -20,6 +20,8 @@
 #include <cpu/ifetch.h>
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #define R(i) gpr(i)
 #define CSR(idx) (*get_csr(check_csr_idx(idx)))
@@ -47,7 +49,7 @@ static inline word_t *get_csr(int idx) {
 enum {
   TYPE_I, TYPE_U, TYPE_S,
   TYPE_N, TYPE_J, TYPE_R,
-  TYPE_B, TYPE_ICSR// none
+  TYPE_B, TYPE_ICSR, TYPE_A// none
 };
 
 #define src1R() do { *src1 = R(rs1); } while (0)
@@ -73,6 +75,7 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_
     case TYPE_R: src1R(); src2R();         break;
     case TYPE_B: src1R(); src2R(); immB(); break;
     case TYPE_ICSR: src1R();               break;
+    case TYPE_A: src1R(); src2R();         break;
   }
 }
 
@@ -190,7 +193,6 @@ static int decode_exec(Decode *s) {
     else R(rd) = SEXT(BITS((uint32_t) src1 / (uint32_t) src2, 31, 0), 32);
   );
 
-  // INSTPAT("0000001 ????? ????? 110 ????? 01110 11", remw   , R, R(rd) = SEXT(BITS((int32_t)  src1 % (int32_t)  src2, 31, 0), 32));
   INSTPAT("0000001 ????? ????? 110 ????? 01110 11", remw   , R,
     // division by 0
     if (src2 == 0) R(rd) = src1;
@@ -200,7 +202,6 @@ static int decode_exec(Decode *s) {
     else R(rd) = SEXT(BITS((int32_t)  src1 % (int32_t)  src2, 31, 0), 32);
   );
 
-  // INSTPAT("0000001 ????? ????? 111 ????? 01110 11", remuw  , R, R(rd) = SEXT(BITS((uint32_t) src1 % (uint32_t) src2, 31, 0), 32));
   INSTPAT("0000001 ????? ????? 111 ????? 01110 11", remuw  , R,
     // division by 0
     if (src2 == 0) R(rd) = src1;
@@ -218,9 +219,125 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , ICSR, difftest_skip_ref(); if (rd != 0) {word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) = src1);
   INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , ICSR, difftest_skip_ref(); if (rd != 0) { word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) |= src1);
 
+  INSTPAT("00010?? 00000 ????? 010 ????? 01011 11", lr_w   , A, cpu.lr_addr = src1; cpu.lr_valid = true; cpu.lr_d = false; R(rd) = SEXT(Mr(src1, 4), 32));
+  INSTPAT("00010?? 00000 ????? 011 ????? 01011 11", lr_d   , A, cpu.lr_addr = src1; cpu.lr_valid = true; cpu.lr_d = true;  R(rd) = Mr(src1, 8));
+  INSTPAT("00011?? ????? ????? 010 ????? 01011 11", sc_w   , A,
+    if (cpu.lr_valid == true && src1 == cpu.lr_addr && cpu.lr_d == false) {
+      Mw(src1, 4, src2);
+      R(rd) = (word_t) 0;
+    } else {
+      R(rd) = (word_t) 1;
+    }
+    cpu.lr_valid = false;
+    cpu.lr_d = false;
+  );
+  INSTPAT("00011?? ????? ????? 011 ????? 01011 11", sc_d   , A,
+    if (cpu.lr_valid == true && src1 == cpu.lr_addr && cpu.lr_d == true) {
+      Mw(src1, 8, src2);
+      R(rd) = (word_t) 0;
+    } else {
+      R(rd) = (word_t) 1;
+    }
+    cpu.lr_valid = false;
+    cpu.lr_d = false;
+  );
+  INSTPAT("00000?? ????? ????? 010 ????? 01011 11", amoadd_w, A,
+    uint32_t t = Mr(src1, 4);
+    R(rd) = SEXT(t, 32);
+    Mw(src1, 4, (uint32_t) (t + (uint32_t) src2));
+  );
+  INSTPAT("00000?? ????? ????? 011 ????? 01011 11", amoadd_d, A,
+    uint64_t t = Mr(src1, 8);
+    R(rd) = t;
+    Mw(src1, 8, (t + src2));
+  );
+  INSTPAT("01100?? ????? ????? 010 ????? 01011 11", amoand_w, A,
+    uint32_t t = Mr(src1, 4);
+    R(rd) = SEXT(t, 32);
+    Mw(src1, 4, (uint32_t) (t & (uint32_t) src2));
+  );
+  INSTPAT("01100?? ????? ????? 011 ????? 01011 11", amoand_d, A,
+    uint64_t t = Mr(src1, 8);
+    R(rd) = t;
+    Mw(src1, 8, (t & src2));
+  );
+  INSTPAT("10100?? ????? ????? 010 ????? 01011 11", amomax_w, A,
+    uint32_t t = Mr(src1, 4);
+    R(rd) = SEXT(t, 32);
+    Mw(src1, 4, (uint32_t) ((int32_t) t > (int32_t) src2 ? t : (uint32_t) src2));
+  );
+  INSTPAT("10100?? ????? ????? 011 ????? 01011 11", amomax_d, A,
+    uint64_t t = Mr(src1, 8);
+    R(rd) = t;
+    Mw(src1, 8, ((int64_t) t > (int64_t) src2 ? t : src2));
+  );
+  INSTPAT("11100?? ????? ????? 010 ????? 01011 11", amomaxu_w, A,
+    uint32_t t = Mr(src1, 4);
+    R(rd) = SEXT(t, 32);
+    Mw(src1, 4, (uint32_t) ((uint32_t) t > (uint32_t) src2 ? t : (uint32_t) src2));
+  );
+  INSTPAT("11100?? ????? ????? 011 ????? 01011 11", amomaxu_d, A,
+    uint64_t t = Mr(src1, 8);
+    R(rd) = t;
+    Mw(src1, 8, ((uint64_t) t > (uint64_t) src2 ? t : src2));
+  );
+  INSTPAT("10000?? ????? ????? 010 ????? 01011 11", amomin_w, A,
+    uint32_t t = Mr(src1, 4);
+    R(rd) = SEXT(t, 32);
+    Mw(src1, 4, (uint32_t) ((int32_t) t < (int32_t) src2 ? t : (uint32_t) src2));
+  );
+  INSTPAT("10000?? ????? ????? 011 ????? 01011 11", amomin_d, A,
+    uint64_t t = Mr(src1, 8);
+    R(rd) = t;
+    Mw(src1, 8, ((int64_t) t < (int64_t) src2 ? t : src2));
+  );
+  INSTPAT("11000?? ????? ????? 010 ????? 01011 11", amominu_w, A,
+    uint32_t t = Mr(src1, 4);
+    R(rd) = SEXT(t, 32);
+    Mw(src1, 4, (uint32_t) ((uint32_t) t < (uint32_t) src2 ? t : (uint32_t) src2));
+  );
+  INSTPAT("11000?? ????? ????? 011 ????? 01011 11", amominu_d, A,
+    uint64_t t = Mr(src1, 8);
+    R(rd) = t;
+    Mw(src1, 8, ((uint64_t) t < (uint64_t) src2 ? t : src2));
+  );
+  INSTPAT("01000?? ????? ????? 010 ????? 01011 11", amoor_w, A,
+    uint32_t t = Mr(src1, 4);
+    R(rd) = SEXT(t, 32);
+    Mw(src1, 4, (uint32_t) (t | (uint32_t) src2));
+  );
+  INSTPAT("01000?? ????? ????? 011 ????? 01011 11", amoor_d, A,
+    uint64_t t = Mr(src1, 8);
+    R(rd) = t;
+    Mw(src1, 8, (t | src2));
+  );
+  INSTPAT("00100?? ????? ????? 010 ????? 01011 11", amoxor_w, A,
+    uint32_t t = Mr(src1, 4);
+    R(rd) = SEXT(t, 32);
+    Mw(src1, 4, (uint32_t) (t ^ (uint32_t) src2));
+  );
+  INSTPAT("00100?? ????? ????? 011 ????? 01011 11", amoxor_d, A,
+    uint64_t t = Mr(src1, 8);
+    R(rd) = t;
+    Mw(src1, 8, (t ^ src2));
+  );
+  INSTPAT("00001?? ????? ????? 010 ????? 01011 11", amoswap_w, A,
+    uint32_t t = Mr(src1, 4);
+    R(rd) = SEXT(t, 32);
+    Mw(src1, 4, (uint32_t) (src2));
+  );
+  INSTPAT("00001?? ????? ????? 011 ????? 01011 11", amoswap_d, A,
+    uint64_t t = Mr(src1, 8);
+    R(rd) = t;
+    Mw(src1, 8, (src2));
+  );
+
+
   INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, difftest_skip_ref(); s->dnpc = isa_raise_intr(11, s->pc));
 
   INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, difftest_skip_ref(); s->dnpc = isa_mret());
+
+  INSTPAT("0000 ???? ???? 00000 000 00000 00011 11", fence , N, ); // fence is nop now
   
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
