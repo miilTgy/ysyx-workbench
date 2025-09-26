@@ -41,6 +41,13 @@ static inline word_t *get_csr(int idx) {
   case 0x340: csr = &cpu.csr.mscratch; break;
   case 0xc00: csr = &cpu.csr.cycle; break;
   case 0xc01: csr = &cpu.csr.time; break;
+  case 0xf11: csr = &cpu.csr.vendorid; break;
+  case 0xf12: csr = &cpu.csr.marchid; break;
+  case 0xf13: csr = &cpu.csr.mimpid; break;
+  case 0xf14: csr = &cpu.csr.mhartid; break;
+  case 0xf15: csr = &cpu.csr.mconfigptr; break;
+  case 0x3a0: printf("no 0x3a0\n"); return 0; // 假装实现了pmpcfg0
+  case 0x3b0: printf("no 0x3b0\n"); return 0; // 假装实现了pmpaddr0
   default: printf("CSR ERROR: cannot find csr idx %x!\n", idx); assert(0); break;
   }
   return csr;
@@ -217,12 +224,86 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 110 ????? 11000 11", bltu   , B, s->dnpc = ((word_t)  src1 <  (word_t)  src2) ? imm + s->pc : s->dnpc);
   INSTPAT("??????? ????? ????? 111 ????? 11000 11", bgeu   , B, s->dnpc = ((word_t)  src1 >= (word_t)  src2) ? imm + s->pc : s->dnpc);
 
-  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , ICSR, difftest_skip_ref(); if (rd != 0) {word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) = src1);
-  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , ICSR, difftest_skip_ref(); if (rd != 0) { word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) |= src1);
-  INSTPAT("??????? ????? ????? 011 ????? 11100 11", csrrc  , ICSR, difftest_skip_ref(); if (rd != 0) { word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) &= ~src1);
-  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrwi , ICSR, difftest_skip_ref(); if (rd != 0) {word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) = imm);
-  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrsi , ICSR, difftest_skip_ref(); if (rd != 0) { word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) |= imm);
-  INSTPAT("??????? ????? ????? 011 ????? 11100 11", csrrci , ICSR, difftest_skip_ref(); if (rd != 0) { word_t t = CSR(csr1); R(rd) = t; } CSR(csr1) &= ~imm);
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , ICSR,
+    difftest_skip_ref();
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+      // printf("1.csr1 == 0x%x\n", csr1);
+      isa_raise_intr(2, s->pc);
+    } else {
+      if (rd != 0) {
+        word_t t = CSR(csr1);
+        R(rd) = t;
+        }
+      CSR(csr1) = src1;
+    }
+  );
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , ICSR,
+    difftest_skip_ref();
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+      // printf("1.csr1 == 0x%x\n", csr1);
+      isa_raise_intr(2, s->pc);
+    } else {
+      if (rd != 0) {
+        word_t t = CSR(csr1);
+        R(rd) = t;
+      }
+      CSR(csr1) |= src1;
+    }
+  );
+  INSTPAT("??????? ????? ????? 011 ????? 11100 11", csrrc  , ICSR,
+    difftest_skip_ref();
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+      // printf("1.csr1 == 0x%x\n", csr1);
+      isa_raise_intr(2, s->pc);
+    } else {
+      if (rd != 0) {
+        word_t t = CSR(csr1);
+        R(rd) = t;
+      }
+      CSR(csr1) &= ~src1;
+    }
+  );
+  INSTPAT("??????? ????? ????? 101 ????? 11100 11", csrrwi , ICSR,
+    difftest_skip_ref();
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+      // printf("1.csr1 == 0x%x\n", csr1);
+      isa_raise_intr(2, s->pc);
+    } else {
+      if (rd != 0) {
+        // printf("2.csr1 == 0x%x\n", csr1);
+        word_t t = CSR(csr1);
+        R(rd) = t;
+      }
+      // printf("3.csr1 == 0x%x\n", csr1);
+      CSR(csr1) = imm;
+    }
+  );
+  INSTPAT("??????? ????? ????? 110 ????? 11100 11", csrrsi , ICSR,
+    difftest_skip_ref();
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+      // printf("1.csr1 == 0x%x\n", csr1);
+      isa_raise_intr(2, s->pc);
+    } else {
+      if (rd != 0) {
+        word_t t = CSR(csr1);
+        R(rd) = t;
+      }
+      CSR(csr1) |= imm;
+    }
+  );
+  INSTPAT("??????? ????? ????? 111 ????? 11100 11", csrrci , ICSR,
+    difftest_skip_ref();
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+      // printf("1.csr1 == 0x%x\n", csr1);
+      isa_raise_intr(2, s->pc);
+    } else {
+      if (rd != 0) {
+        word_t t = CSR(csr1);
+        R(rd) = t;
+      }
+      CSR(csr1) &= ~imm;
+    }
+  );
 
   INSTPAT("00010?? 00000 ????? 010 ????? 01011 11", lr_w   , A, cpu.lr_addr = src1; cpu.lr_valid = true; cpu.lr_d = false; R(rd) = SEXT(Mr(src1, 4), 32));
   INSTPAT("00010?? 00000 ????? 011 ????? 01011 11", lr_d   , A, cpu.lr_addr = src1; cpu.lr_valid = true; cpu.lr_d = true;  R(rd) = Mr(src1, 8));

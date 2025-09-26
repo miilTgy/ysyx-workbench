@@ -20,6 +20,7 @@
 
 typedef struct {
   word_t mtvec, mepc, mstatus, mcause, mie, mip, mtval, mscratch;
+  word_t vendorid, marchid, mimpid, mhartid, mconfigptr;
   word_t cycle, time;
 } MUXDEF(CONFIG_RV64, riscv64_MCSR_state, riscv32_MCSR_state);
 
