@@ -36,7 +36,11 @@ static void serial_io_handler(uint32_t offset, int len, bool is_write) {
       if (is_write) serial_putc(serial_base[0]);
       else panic("do not support read");
       break;
-    default: panic("do not support offset = %d", offset);
+    case 3: // 串口线路控制寄存器 - 忽略配置
+    case 5: // 串口状态寄存器 - 返回“就绪”状态
+      if (!is_write) serial_base[offset] = 0x60; // 就绪
+      break;
+    default: break; // panic("do not support offset = %d", offset);
   }
 }
 
