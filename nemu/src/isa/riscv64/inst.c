@@ -82,7 +82,7 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_
     case TYPE_J: src1R();          immJ(); break;
     case TYPE_R: src1R(); src2R();         break;
     case TYPE_B: src1R(); src2R(); immB(); break;
-    case TYPE_ICSR: src1R();               break;
+    case TYPE_ICSR: src1R();    immICSR(); break;
     case TYPE_A: src1R(); src2R();         break;
   }
 }
@@ -226,7 +226,7 @@ static int decode_exec(Decode *s) {
 
   INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , ICSR,
     difftest_skip_ref();
-    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 /*|| csr1 == 0x340*/) {
       // printf("1.csr1 == 0x%x\n", csr1);
       isa_raise_intr(2, s->pc);
     } else {
@@ -239,7 +239,7 @@ static int decode_exec(Decode *s) {
   );
   INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , ICSR,
     difftest_skip_ref();
-    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 /*|| csr1 == 0x340*/) {
       // printf("1.csr1 == 0x%x\n", csr1);
       isa_raise_intr(2, s->pc);
     } else {
@@ -252,7 +252,7 @@ static int decode_exec(Decode *s) {
   );
   INSTPAT("??????? ????? ????? 011 ????? 11100 11", csrrc  , ICSR,
     difftest_skip_ref();
-    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 /*|| csr1 == 0x340*/) {
       // printf("1.csr1 == 0x%x\n", csr1);
       isa_raise_intr(2, s->pc);
     } else {
@@ -265,7 +265,7 @@ static int decode_exec(Decode *s) {
   );
   INSTPAT("??????? ????? ????? 101 ????? 11100 11", csrrwi , ICSR,
     difftest_skip_ref();
-    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 /*|| csr1 == 0x340*/) {
       // printf("1.csr1 == 0x%x\n", csr1);
       isa_raise_intr(2, s->pc);
     } else {
@@ -280,7 +280,7 @@ static int decode_exec(Decode *s) {
   );
   INSTPAT("??????? ????? ????? 110 ????? 11100 11", csrrsi , ICSR,
     difftest_skip_ref();
-    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 /*|| csr1 == 0x340*/) {
       // printf("1.csr1 == 0x%x\n", csr1);
       isa_raise_intr(2, s->pc);
     } else {
@@ -293,7 +293,7 @@ static int decode_exec(Decode *s) {
   );
   INSTPAT("??????? ????? ????? 111 ????? 11100 11", csrrci , ICSR,
     difftest_skip_ref();
-    if (csr1 == 0x3a0 || csr1 == 0x3b0 || csr1 == 0x340) {
+    if (csr1 == 0x3a0 || csr1 == 0x3b0 /*|| csr1 == 0x340*/) {
       // printf("1.csr1 == 0x%x\n", csr1);
       isa_raise_intr(2, s->pc);
     } else {
@@ -419,7 +419,7 @@ static int decode_exec(Decode *s) {
   );
 
 
-  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, difftest_skip_ref(); s->dnpc = isa_raise_intr(11, s->pc));
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, difftest_skip_ref(); s->dnpc = isa_raise_intr(8, s->pc));
 
   INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, difftest_skip_ref(); s->dnpc = isa_mret());
 
@@ -428,6 +428,10 @@ static int decode_exec(Decode *s) {
   INSTPAT("0001000 00101 00000 000 00000 11100 11", wfi, N, s->dnpc = isa_wfi(s->pc));
   
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
+  // INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N,
+  //   difftest_skip_ref();
+  //   // s->dnpc = isa_raise_intr(3, s->pc); // 3 = breakpoint exception
+  // ); // R(10) is $a0
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 
