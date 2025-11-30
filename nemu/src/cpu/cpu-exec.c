@@ -87,6 +87,9 @@ static void execute(uint64_t n) {
   Decode s;
   for (;n > 0; n --) {
     exec_once(&s, cpu.pc);
+    // if (cpu.gpr[2] < CONFIG_MBASE || cpu.gpr[2] > CONFIG_MBASE + CONFIG_MSIZE) {
+    //   printf("sp out of range at pc = 0x%016lx with sp = 0x%016lx\n", cpu.pc, cpu.gpr[2]);
+    // }
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
     if (nemu_state.state != NEMU_RUNNING) break;
@@ -143,6 +146,7 @@ void cpu_exec(uint64_t n) {
            (nemu_state.halt_ret == 0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
             ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
           nemu_state.halt_pc);
+      assert_fail_msg();
       // fall through
     case NEMU_QUIT: statistic();
   }

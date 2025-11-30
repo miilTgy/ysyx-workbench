@@ -15,8 +15,12 @@
 
 #include "common.h"
 #include <isa.h>
+#include "../../../../include/device/clint.h"
 
 word_t isa_raise_intr(word_t EXcode, vaddr_t epc) {
+  if (EXcode == 3) { // Breakpoint exception
+    printf("Breakpoint exception at PC: 0x%016lx\n", epc);
+  }
   /* Trigger an interrupt/exception with ``NO''.
    * Then return the address of the interrupt/exception vector.
    */
@@ -62,6 +66,22 @@ word_t isa_wfi(vaddr_t pc) {
 }
 
 word_t isa_query_intr() {
+  // Check software interrupt first (higher priority)
+  if (clint_software_intr_pending() && 
+    ((cpu.csr.mie >> 3) & 0x1) == 1 &&  // MIE.MSIE = 1
+    ((cpu.csr.mstatus >> 3) & 0x1) == 1) { // MSTATUS.MIE = 1
+    printf("CLINT: Returning software interrupt\n");
+    return IRQ_SOFTW;  // Machine software interrupt
+  }
+  
+  // Check timer interrupt
+  if (clint_timer_intr_pending() && 
+    ((cpu.csr.mie >> 7) & 0x1) == 1 &&  // MIE.MTIE = 1
+    ((cpu.csr.mstatus >> 3) & 0x1) == 1) { // MSTATUS.MIE = 1
+    // printf("CLINT: Returning timer interrupt\n");
+    return IRQ_TIMER;  // Machine timer interrupt
+  }
+
   if (((cpu.csr.mie >> 7) & 0x1) == 1 && // MIE.MTIE = 1
       ((cpu.csr.mstatus >> 3) & 0x1) == 1 && // MSTATUS.MIE = 1
       (cpu.INTR)) {

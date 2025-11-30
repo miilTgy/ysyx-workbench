@@ -55,9 +55,15 @@ void add_mmio_map(const char *name, paddr_t addr, void *space, uint32_t len, io_
 
 /* bus interface */
 word_t mmio_read(paddr_t addr, int len) {
+  if (addr != 0xa00003fd) {
+    // printf("MMIO READ ADDR = 0x%08x\n", addr);
+  }
   return map_read(addr, len, fetch_mmio_map(addr));
 }
 
 void mmio_write(paddr_t addr, int len, word_t data) {
+  if (addr != 0xa00003f8) {
+    // printf("MMIO WRITE ADDR = 0x%08x\n", addr);
+  }
   map_write(addr, len, data, fetch_mmio_map(addr));
 }
