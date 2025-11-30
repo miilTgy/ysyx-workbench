@@ -13,6 +13,7 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
+#include "common.h"
 #include "isa.h"
 #include "local-include/reg.h"
 #include "../../monitor/sdb/sdb.h"
@@ -419,7 +420,14 @@ static int decode_exec(Decode *s) {
   );
 
 
-  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, difftest_skip_ref(); s->dnpc = isa_raise_intr(8, s->pc));
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N,
+    difftest_skip_ref();
+    word_t excode;
+    if (cpu.priv == 0) excode = 8;       // U-mode
+    else if (cpu.priv == 3) excode = 9;   // M-mode
+    else excode = 11;                      // M-mode
+    s->dnpc = isa_raise_intr(excode, s->pc);
+  );
 
   INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, difftest_skip_ref(); s->dnpc = isa_mret());
 

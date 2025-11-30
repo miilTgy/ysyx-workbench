@@ -17,6 +17,7 @@
 #define __ISA_RISCV_H__
 
 #include <common.h>
+#include <sys/types.h>
 
 typedef struct {
   word_t mtvec, mepc, mstatus, mcause, mie, mip, mtval, mscratch;
@@ -34,6 +35,9 @@ typedef struct {
   uint64_t lr_addr;
   bool lr_valid;
   bool lr_d;
+
+  // privilege mode
+  uint8_t priv;
 
   MUXDEF(CONFIG_RV64, riscv64_MCSR_state, riscv32_MCSR_state) csr;
 } MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);

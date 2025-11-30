@@ -48,6 +48,9 @@ static void restart() {
   cpu.csr.mimpid = 0;
   cpu.csr.mhartid = 0;
   cpu.csr.mconfigptr = 0;
+
+  /* Set privilege mode to M mode */
+  cpu.priv = 3; // M mode
 }
 
 void init_isa() {
