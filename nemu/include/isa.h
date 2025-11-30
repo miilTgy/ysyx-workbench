@@ -53,6 +53,7 @@ word_t isa_mret();
 word_t isa_wfi(vaddr_t pc);
 #define INTR_EMPTY ((word_t)-1)
 #define IRQ_TIMER 0x8000000000000007  // for riscv64
+#define IRQ_SOFTW 0x8000000000000003  // for riscv64
 word_t isa_query_intr();
 
 // difftest

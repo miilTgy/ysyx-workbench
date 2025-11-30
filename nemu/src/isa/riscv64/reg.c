@@ -33,10 +33,22 @@ void isa_reg_display() {
     
   }
   printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "cpu.pc", cpu.pc);
-  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\t", "csr.mtvec", cpu.csr.mtvec);
-  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "csr.mepc", cpu.csr.mepc);
-  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\t", "csr.mstatus", cpu.csr.mstatus);
-  printf("Reg$\033[1;31m%-4s\033[m 0x%08lx\n", "csr.mcause", cpu.csr.mcause);
+
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\t", "csr.mtvec     ", cpu.csr.mtvec);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\n", "csr.mepc      ", cpu.csr.mepc);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\t", "csr.mstatus   ", cpu.csr.mstatus);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\n", "csr.mcause    ", cpu.csr.mcause);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\t", "csr.mie       ", cpu.csr.mie);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\n", "csr.mip       ", cpu.csr.mip);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\t", "csr.mtval     ", cpu.csr.mtval);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\n", "csr.mscratch  ", cpu.csr.mscratch);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\t", "csr.vendorid  ", cpu.csr.vendorid);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\n", "csr.marchid   ", cpu.csr.marchid);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\t", "csr.mimpid    ", cpu.csr.mimpid);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\n", "csr.mhartid   ", cpu.csr.mhartid);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\t", "csr.mconfigptr", cpu.csr.mconfigptr);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\n", "csr.cycle     ", cpu.csr.cycle);
+  printf("Reg$\033[1;31m%-4s\033[m\t0x%016lx\n", "csr.time      ", cpu.csr.time);
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {

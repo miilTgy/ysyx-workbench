@@ -29,18 +29,19 @@ static const uint32_t img [] = {
 static void restart() {
   /* Set the initial program counter. */
   cpu.pc = RESET_VECTOR;
-  // cpu.pc = 0x80001000;
 
   /* The zero register is always 0. */
   cpu.gpr[0] = 0;
   // sp = 0x8800_0000
-  cpu.gpr[2] = CONFIG_MBASE + CONFIG_MSIZE;
+  // cpu.gpr[2] = CONFIG_MBASE + CONFIG_MSIZE;
   // a0 = 0
   cpu.gpr[10] = 0;
   // a11 = dtb physical address
-  cpu.gpr[11] = 0x802af0e0;
+  // cpu.gpr[11] = 0x802af0a0;
+  cpu.gpr[11] = 0;
 
   /* Set mstatus to 0xa00001800 */
+  cpu.csr.cycle = 0;
   cpu.csr.mstatus = 0xa00001800;
   cpu.csr.vendorid = 0;
   cpu.csr.marchid = 0;
