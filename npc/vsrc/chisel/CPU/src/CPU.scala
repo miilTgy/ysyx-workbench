@@ -11,6 +11,7 @@ import alu.ALU
 import dmem.DMEM
 import dmem.DMEM_d
 import wbu.WBU
+import csr.CSRctl
 
 class CPU extends Module {
     val io = IO(new Bundle {
@@ -24,6 +25,7 @@ class CPU extends Module {
     val alu = Module(new ALU())
     val dmem = Module(new DMEM_d())
     val wbu = Module(new WBU())
+    val csr = Module(new CSRctl())
     
     io.pc := ifu.ioIMEM.pc
 
@@ -42,14 +44,15 @@ class CPU extends Module {
     dmem.IDUio <> idu.ioDMEM
 
     dmem.GPRio.wdata := gpr.dataOutio.data2
-    val dataWB = Mux(idu.ioDMEM.menslct, dmem.ioMUX.rdata, alu.ioDMEMUX.res_addr)
+    val dataWB_1 = Mux(idu.ioDMEM.menslct, dmem.ioMUX.rdata, alu.ioDMEMUX.res_addr)
+    val dataWB = Mux(idu.ioCSR.csrWenslct, csr.ioMUX.csrRdata, dataWB_1)
     wbu.MUXio.dataWB := dataWB
 
     gpr.GPRio <> idu.ioGPR
     gpr.dataInio <> wbu.ioGPR
 
     csr.IDUio <> idu.ioCSR
-    csr.WBUio <> wbu.ioCSR
+    csr.WBUio.csrWB := alu.ioDMEMUX.res_addr
     csr.IFUio <> ifu.ioIMEM
 
     val jmpslct = idu.ioJMP.jmpslct & alu.ioJMP.jmpslct
@@ -82,4 +85,3 @@ object Main extends App {
         .emitSystemVerilogFile(new cpu.CPU(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
     )
 }
-

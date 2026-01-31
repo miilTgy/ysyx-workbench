@@ -24,7 +24,7 @@ class DMEM extends BlackBox with HasBlackBoxPath {
     val io = IO(new DMEMIO)
 
     // Set the resource path for the Verilog file
-    addPath("/home/miil/ysyx-workbench/npc/vsrc/chisel/DMEM/src/DMEM.v")
+    addPath("/home/miil/ysyx/ysyx-workbench/npc/vsrc/chisel/DMEM/src/DMEM.v")
 }
 
 class DMEM_d extends Module {

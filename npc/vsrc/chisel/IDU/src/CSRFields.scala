@@ -46,7 +46,7 @@ object EXPCslct extends BoolDecodeField[Insn] {
 object GenCSROp extends DecodeField[Insn, UInt] {
     override def name = "gen csrop"
 
-    override def chiselType = UInt((csrop.CSROp.WRITE.getWidth).W)
+    override def chiselType = UInt(csrop.CSROp.getWidth.W)
 
     override def genTable(op: Insn): BitPat = {
         val csrOp = csrop.CSROpMap.getCSROp(op.inst.name)

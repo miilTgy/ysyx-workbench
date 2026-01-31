@@ -27,10 +27,10 @@ class CSRctl extends Module {
     val isEcall = IDUio.csrop === csrop.CSROp.ECALL.asUInt
     val isMret = IDUio.csrop === csrop.CSROp.MRET.asUInt
 
-    CSRs.CSRio.mstatusWen := ((IDUio.csrWaddr === CSRIndex.MSTATUS.asUInt) & IDUio.csrWen) | isEcall | isMret
-    CSRs.CSRio.mtvecWen   := ((IDUio.csrWaddr === CSRIndex.MTVEC.asUInt) & IDUio.csrWen)
-    CSRs.CSRio.mepcWen    := ((IDUio.csrWaddr === CSRIndex.MEPC.asUInt) & IDUio.csrWen) | isEcall
-    CSRs.CSRio.mcauseWen  := ((IDUio.csrWaddr === CSRIndex.MCUASE.asUInt) & IDUio.csrWen) | isEcall
+    CSRs.CSRio.mstatusWen := ((IDUio.csrWaddr === CSRIndex.MSTATUS.asUInt) & IDUio.csrWenslct) | isEcall | isMret
+    CSRs.CSRio.mtvecWen   := ((IDUio.csrWaddr === CSRIndex.MTVEC.asUInt) & IDUio.csrWenslct)
+    CSRs.CSRio.mepcWen    := ((IDUio.csrWaddr === CSRIndex.MEPC.asUInt) & IDUio.csrWenslct) | isEcall
+    CSRs.CSRio.mcauseWen  := ((IDUio.csrWaddr === CSRIndex.MCUASE.asUInt) & IDUio.csrWenslct) | isEcall
 
     val Adata = Mux1H(Seq(
         (IDUio.csrop === csrop.CSROp.WRITE.asUInt) -> WBUio.csrWB,
@@ -61,12 +61,12 @@ class CSRctl extends Module {
     val mcauseEcall = 11.U
     val mcauseEdata = mcauseEcall
 
-    CSRs.CSRio.mstatusWdata := Mux(IDUio.csrWen, Adata, mstatusEdata)
-    CSRs.CSRio.mtvecWdata   := Mux(IDUio.csrWen, Adata, mtvecEdata)
-    CSRs.CSRio.mepcWdata    := Mux(IDUio.csrWen, Adata, mepcEdata)
-    CSRs.CSRio.mcauseWdata  := Mux(IDUio.csrWen, Adata, mcauseEdata)
+    CSRs.CSRio.mstatusWdata := Mux(IDUio.csrWenslct, Adata, mstatusEdata)
+    CSRs.CSRio.mtvecWdata   := Mux(IDUio.csrWenslct, Adata, mtvecEdata)
+    CSRs.CSRio.mepcWdata    := Mux(IDUio.csrWenslct, Adata, mepcEdata)
+    CSRs.CSRio.mcauseWdata  := Mux(IDUio.csrWenslct, Adata, mcauseEdata)
 
-    ioCSRctl.csrRdata := Mux1H(Seq(
+    ioMUX.csrRdata := Mux1H(Seq(
         (IDUio.csrRaddr === CSRIndex.MSTATUS.asUInt) -> CSRs.CSRio.mstatusRdata,
         (IDUio.csrRaddr === CSRIndex.MTVEC.asUInt) -> CSRs.CSRio.mtvecRdata,
         (IDUio.csrRaddr === CSRIndex.MEPC.asUInt) -> CSRs.CSRio.mepcRdata,

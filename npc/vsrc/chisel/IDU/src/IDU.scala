@@ -13,6 +13,7 @@ import org.chipsalliance.rvdecoderdb
 import org.chipsalliance.rvdecoderdb.Utils
 
 import aluop._
+import csrop.CSROp
 import imem.IOIDU
 import ifu.IOIMEM
 import gpr.GPRINIO
@@ -48,6 +49,7 @@ class IOCSR extends Bundle {
     val csrWenslct = Output(Bool())
     val csrWaddr = Output(UInt(12.W))
     val csrRaddr = Output(UInt(12.W))
+    val csrop = Output(UInt(CSROp.getWidth.W))
 }
 
 class IDU extends Module {
@@ -83,7 +85,7 @@ class IDU extends Module {
     val systemInstSets = Set("mret")
 
     /* OutPut Inst Table Begin */
-        val instTableOutputFile = new File("/home/miil/ysyx-workbench/npc/vsrc/chisel/InstSupported.md")
+        val instTableOutputFile = new File("/home/miil/ysyx/ysyx-workbench/npc/vsrc/chisel/InstSupported.md")
         var rv32imInstListString = instTable
             .filter(instr => targetSets.contains(instr.instructionSet.name)) // filter Sets
             .filter(_.pseudoFrom.isEmpty)
@@ -127,7 +129,7 @@ class IDU extends Module {
         JMPslct, PCInc4slct, PCSrcslct, CondReslct, DMEMExtSign,
         GenAluOp, GenSub, GenWen, GenAluSext, GenWriteMask,
         GenDMEMExtPos, GenMwen,
-        CSRWen, GenCSROp,
+        CSRWenslct, GenCSROp,
         EXPCslct
     ))
     val decodeResult = decodeTable.decode(IMEMio.inst_data)
@@ -147,7 +149,11 @@ class IDU extends Module {
     ioDMEM.wmask     := decodeResult(GenWriteMask)
     ioDMEM.extPos    := decodeResult(GenDMEMExtPos)
     ioDMEM.extSign   := decodeResult(DMEMExtSign)
+    ioMUX.csrRenslct := decodeResult(CSRWenslct)
     ioCSR.csrWenslct := decodeResult(CSRWenslct)
+    ioCSR.csrop      := decodeResult(GenCSROp)
+    ioCSR.csrWaddr   := IMEMio.inst_data(31, 20)
+    ioCSR.csrRaddr   := IMEMio.inst_data(31, 20)
 
     val imm_i    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 20))                                                       // I-type
     val imm_s    = Cat(Fill(52, IMEMio.inst_data(31)), IMEMio.inst_data(31, 25), IMEMio.inst_data(11, 7))                              // S-type

@@ -17,7 +17,7 @@ class IMEM extends BlackBox with HasBlackBoxPath {
     })
 
     // Set the resource path for the Verilog file
-    addPath("/home/miil/ysyx-workbench/npc/vsrc/chisel/IMEM/src/IMEM.v")
+    addPath("/home/miil/ysyx/ysyx-workbench/npc/vsrc/chisel/IMEM/src/IMEM.v")
 }
 
 class IMEM_d extends Module {
