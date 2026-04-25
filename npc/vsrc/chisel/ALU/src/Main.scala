@@ -1,6 +1,6 @@
 import alu.ALU
 
-object Main extends App {
+object ALUMain extends App {
     val firtoolOptions = Array(
     "--lowering-options=" + List(
       // make yosys happy
@@ -17,6 +17,10 @@ object Main extends App {
     println()
     println(
       circt.stage.ChiselStage
-        .emitSystemVerilogFile(new ALU(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
+        .emitSystemVerilogFile(new ALU(), args :+ "--target-dir" :+ "../", firtoolOptions)
     )
+}
+
+object Main extends App {
+    ALUMain.main(args)
 }

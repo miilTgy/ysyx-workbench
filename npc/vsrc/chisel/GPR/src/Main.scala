@@ -1,6 +1,6 @@
 import gpr.GPR
 
-object Main extends App {
+object GPRMain extends App {
     val firtoolOptions = Array(
     "--lowering-options=" + List(
       // make yosys happy
@@ -17,8 +17,10 @@ object Main extends App {
     println()
     println(
       circt.stage.ChiselStage
-        .emitSystemVerilogFile(new GPR(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
+        .emitSystemVerilogFile(new GPR(), args :+ "--target-dir" :+ "../", firtoolOptions)
     )
 }
 
-
+object Main extends App {
+    GPRMain.main(args)
+}

@@ -12,7 +12,9 @@ DIFF ?= -d /home/miil/ysyx-workbench/nemu/build/riscv64-nemu-interpreter-so
 
 CSRC += $(shell find $(abspath ./csrc) -name "*.cpp")
 # VSRC += $(filter-out $(abspath ./vsrc/chisel)/%.v, $(shell find $(abspath ./vsrc) -name "*.v"))
-VSRC += $(shell find $(abspath ./vsrc) -name "$(TOP).sv")
+VSRC += $(wildcard $(abspath ./vsrc)/$(TOP).sv)
+
+include vsrc/chisel/chisel.mk
 
 .PHONY: sim genc clean
 

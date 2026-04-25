@@ -1,6 +1,6 @@
 import dmem.DMEM_d
 
-object Main extends App {
+object DMEMMain extends App {
     val firtoolOptions = Array(
     "--lowering-options=" + List(
       // make yosys happy
@@ -17,7 +17,10 @@ object Main extends App {
     println()
     println(
       circt.stage.ChiselStage
-        .emitSystemVerilogFile(new DMEM_d(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
+        .emitSystemVerilogFile(new DMEM_d(), args :+ "--target-dir" :+ "../", firtoolOptions)
     )
 }
 
+object Main extends App {
+    DMEMMain.main(args)
+}

@@ -82,6 +82,6 @@ object Main extends App {
     println()
     println(
       circt.stage.ChiselStage
-        .emitSystemVerilogFile(new cpu.CPU(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
+        .emitSystemVerilogFile(new cpu.CPU(), args :+ "--target-dir" :+ "../", firtoolOptions)
     )
 }

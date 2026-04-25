@@ -1,6 +1,6 @@
 import idu.IDU
 
-object Main extends App {
+object IDUMain extends App {
     val firtoolOptions = Array(
     "--lowering-options=" + List(
       // make yosys happy
@@ -17,6 +17,10 @@ object Main extends App {
     println()
     println(
       circt.stage.ChiselStage
-        .emitSystemVerilogFile(new IDU(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
+        .emitSystemVerilogFile(new IDU(), args :+ "--target-dir" :+ "../", firtoolOptions)
     )
+}
+
+object Main extends App {
+    IDUMain.main(args)
 }

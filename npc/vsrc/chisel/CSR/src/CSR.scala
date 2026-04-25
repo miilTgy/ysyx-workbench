@@ -54,6 +54,6 @@ object csrMain extends App {
     println()
     println(
       circt.stage.ChiselStage
-        .emitSystemVerilogFile(new CSR(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
+        .emitSystemVerilogFile(new CSR(), args :+ "--target-dir" :+ "../", firtoolOptions)
     )
 }

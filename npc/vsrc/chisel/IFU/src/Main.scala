@@ -1,6 +1,6 @@
 import ifu.IFU
 
-object Main extends App {
+object IFUMain extends App {
     val firtoolOptions = Array(
     "--lowering-options=" + List(
       // make yosys happy
@@ -17,6 +17,10 @@ object Main extends App {
     println()
     println(
       circt.stage.ChiselStage
-        .emitSystemVerilogFile(new IFU(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
+        .emitSystemVerilogFile(new IFU(), args :+ "--target-dir" :+ "../", firtoolOptions)
     )
+}
+
+object Main extends App {
+    IFUMain.main(args)
 }

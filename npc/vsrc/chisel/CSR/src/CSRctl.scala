@@ -93,6 +93,6 @@ object Main extends App {
     println()
     println(
       circt.stage.ChiselStage
-        .emitSystemVerilogFile(new CSRctl(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
+        .emitSystemVerilogFile(new CSRctl(), args :+ "--target-dir" :+ "../", firtoolOptions)
     )
 }

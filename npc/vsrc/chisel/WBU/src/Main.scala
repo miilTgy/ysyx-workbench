@@ -1,6 +1,6 @@
 import wbu.WBU
 
-object Main extends App {
+object WBUMain extends App {
     val firtoolOptions = Array(
     "--lowering-options=" + List(
       // make yosys happy
@@ -17,7 +17,10 @@ object Main extends App {
     println()
     println(
       circt.stage.ChiselStage
-        .emitSystemVerilogFile(new WBU(), args :+ "--target-dir" :+ "vsrc/", firtoolOptions)
+        .emitSystemVerilogFile(new WBU(), args :+ "--target-dir" :+ "../", firtoolOptions)
     )
 }
 
+object Main extends App {
+    WBUMain.main(args)
+}
